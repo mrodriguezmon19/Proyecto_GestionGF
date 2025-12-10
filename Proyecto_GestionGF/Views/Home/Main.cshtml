@@ -1,0 +1,212 @@
+﻿@{
+    ViewData["Title"] = "Dashboard - Gestión GF";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="gf-dashboard-body">
+
+    <!-- HEADER (mismo que en Login) -->
+    <header class="gf-header">
+        <div class="gf-header-top">
+            <div class="gf-logo-wrapper">
+                <img src="@Url.Content("~/img/logo.png")"
+                     alt="Logo Grupo Fiesler"
+                     class="gf-logo-img" />
+            </div>
+        </div>
+
+        <div class="gf-header-bar">
+            <span class="gf-header-bar-text">
+                Calidad y servicio que marcan la diferencia
+            </span>
+        </div>
+    </header>
+
+    <!-- LAYOUT PRINCIPAL: SIDEBAR + CONTENIDO -->
+    <div class="gf-main-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="gf-sidebar">
+            <div class="gf-sidebar-title">Gestión GF</div>
+
+            <nav class="gf-nav">
+                <ul class="gf-nav-list">
+                    <li><a href="#" class="gf-nav-link gf-nav-link-active">Dashboard</a></li>
+                    <li><a href="#" class="gf-nav-link">Permisos</a></li>
+                    <li><a href="#" class="gf-nav-link">Usuarios</a></li>
+                    <li><a href="#" class="gf-nav-link">Reportes</a></li>
+                    <li><a href="#" class="gf-nav-link">Configuración</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="gf-content">
+
+            <!-- Barra superior con usuario -->
+            <div class="gf-content-header">
+                <div>
+                    <h1 class="gf-page-title">Dashboard administrador</h1>
+                    <p class="gf-page-subtitle">
+                        Resumen de solicitudes de permisos del personal.
+                    </p>
+                </div>
+
+                <div class="gf-user-info">
+                    <span class="gf-user-name">Admin: Juan Pérez</span>
+                    <a href="#" class="gf-link gf-link-logout">Cerrar sesión</a>
+                </div>
+            </div>
+
+            <!-- KPIs / TARJETAS RESUMEN -->
+            <section class="gf-kpi-grid">
+                <article class="gf-kpi-card">
+                    <h2 class="gf-kpi-label">Permisos pendientes</h2>
+                    <p class="gf-kpi-value">12</p>
+                    <span class="gf-kpi-helper">En espera de aprobación</span>
+                </article>
+
+                <article class="gf-kpi-card">
+                    <h2 class="gf-kpi-label">Aprobados hoy</h2>
+                    <p class="gf-kpi-value">5</p>
+                    <span class="gf-kpi-helper">Últimas 24 horas</span>
+                </article>
+
+                <article class="gf-kpi-card">
+                    <h2 class="gf-kpi-label">Rechazados hoy</h2>
+                    <p class="gf-kpi-value">1</p>
+                    <span class="gf-kpi-helper">Últimas 24 horas</span>
+                </article>
+
+                <article class="gf-kpi-card">
+                    <h2 class="gf-kpi-label">Próximos 7 días</h2>
+                    <p class="gf-kpi-value">8</p>
+                    <span class="gf-kpi-helper">Permisos en calendario</span>
+                </article>
+            </section>
+
+            <!-- FILTROS Y ACCIONES -->
+            <section class="gf-filters-bar">
+                <div class="gf-filters-group">
+                    <div class="gf-form-group">
+                        <label class="gf-label">Desde</label>
+                        <input type="date" class="gf-input" />
+                    </div>
+
+                    <div class="gf-form-group">
+                        <label class="gf-label">Hasta</label>
+                        <input type="date" class="gf-input" />
+                    </div>
+
+                    <div class="gf-form-group">
+                        <label class="gf-label">Estado</label>
+                        <select class="gf-input">
+                            <option value="">Todos</option>
+                            <option>Pendiente</option>
+                            <option>Aprobado</option>
+                            <option>Rechazado</option>
+                        </select>
+                    </div>
+
+                    <div class="gf-form-group">
+                        <label class="gf-label">Tipo permiso</label>
+                        <select class="gf-input">
+                            <option value="">Todos</option>
+                            <option>Vacaciones</option>
+                            <option>Incapacidad</option>
+                            <option>Permiso personal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="gf-filters-actions">
+                    <button class="gf-btn gf-btn-secondary">Limpiar</button>
+                    <button class="gf-btn gf-btn-primary">Filtrar</button>
+                </div>
+            </section>
+
+            <!-- TABLA DE PERMISOS -->
+            <section class="gf-table-section">
+                <div class="gf-table-header-row">
+                    <h2 class="gf-section-title">Solicitudes recientes</h2>
+                    <div class="gf-table-actions">
+                        <button class="gf-btn gf-btn-outline">Exportar</button>
+                        <button class="gf-btn gf-btn-primary">Nuevo permiso</button>
+                    </div>
+                </div>
+
+                <div class="gf-table-wrapper">
+                    <table class="gf-table">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Colaborador</th>
+                                <th>Tipo</th>
+                                <th>Fecha inicio</th>
+                                <th>Fecha fin</th>
+                                <th>Estado</th>
+                                <th>Jefe responsable</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>0012</td>
+                                <td>Ana López</td>
+                                <td>Vacaciones</td>
+                                <td>01/12/2025</td>
+                                <td>05/12/2025</td>
+                                <td><span class="gf-badge gf-badge-pending">Pendiente</span></td>
+                                <td>José Ramírez</td>
+                                <td>
+                                    <a href="#" class="gf-table-link">Ver</a> ·
+                                    <a href="#" class="gf-table-link">Aprobar</a> ·
+                                    <a href="#" class="gf-table-link">Rechazar</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>0011</td>
+                                <td>Carlos Méndez</td>
+                                <td>Incapacidad</td>
+                                <td>28/11/2025</td>
+                                <td>30/11/2025</td>
+                                <td><span class="gf-badge gf-badge-approved">Aprobado</span></td>
+                                <td>Laura Soto</td>
+                                <td>
+                                    <a href="#" class="gf-table-link">Ver</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>0010</td>
+                                <td>María Sánchez</td>
+                                <td>Permiso personal</td>
+                                <td>27/11/2025</td>
+                                <td>27/11/2025</td>
+                                <td><span class="gf-badge gf-badge-rejected">Rechazado</span></td>
+                                <td>José Ramírez</td>
+                                <td>
+                                    <a href="#" class="gf-table-link">Ver</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="gf-footer">
+        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
+    </footer>
+
+</body>
+</html>
+
