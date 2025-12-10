@@ -1,0 +1,215 @@
+﻿@{
+    ViewData["Title"] = "Nuevo permiso - Gestión GF";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="gf-dashboard-body">
+
+    <!-- HEADER (igual al dashboard) -->
+    <header class="gf-header">
+        <div class="gf-header-top">
+            <div class="gf-logo-wrapper">
+                <img src="@Url.Content("~/img/logoGF.png")"
+                     alt="Logo Grupo Fiesler"
+                     class="gf-logo-img" />
+            </div>
+        </div>
+
+        <div class="gf-header-bar">
+            <span class="gf-header-bar-text">
+                Calidad y servicio que marcan la diferencia
+            </span>
+        </div>
+    </header>
+
+    <div class="gf-main-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="gf-sidebar">
+            <div class="gf-sidebar-title">Gestión GF</div>
+
+            <nav class="gf-nav">
+                <ul class="gf-nav-list">
+                    <li><a href="#" class="gf-nav-link">Dashboard</a></li>
+                    <li><a href="#" class="gf-nav-link gf-nav-link-active">Permisos</a></li>
+                    <li><a href="#" class="gf-nav-link">Usuarios</a></li>
+                    <li><a href="#" class="gf-nav-link">Reportes</a></li>
+                    <li><a href="#" class="gf-nav-link">Configuración</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="gf-content">
+
+            <!-- Barra superior -->
+            <div class="gf-content-header">
+                <div>
+                    <h1 class="gf-page-title">Nuevo permiso</h1>
+                    <p class="gf-page-subtitle">
+                        Registre una nueva solicitud de permiso para un colaborador.
+                    </p>
+                </div>
+
+                <div class="gf-user-info">
+                    <span class="gf-user-name">Usuario: Marco Rodríguez Montero</span>
+                    <a href="#" class="gf-link gf-link-logout">Cerrar sesión</a>
+                </div>
+            </div>
+
+            <!-- FORMULARIO: CREACIÓN DE PERMISOS -->
+            <section class="gf-form-card">
+                <form asp-action="Create" asp-controller="Permisos" method="post" enctype="multipart/form-data">
+
+                    <!-- DATOS DEL COLABORADOR -->
+                    <div class="gf-form-section">
+                        <h2 class="gf-form-section-title">Datos del colaborador</h2>
+
+                        <div class="gf-form-grid-2">
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="ColaboradorId">Colaborador</label>
+                                <select id="ColaboradorId" name="ColaboradorId" class="gf-input">
+                                    <option value="">Seleccione un colaborador</option>
+                                    <option value="1">Ana López</option>
+                                    <option value="2">Carlos Méndez</option>
+                                    <option value="3">María Sánchez</option>
+                                </select>
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="Departamento">Departamento</label>
+                                <select id="Departamento" name="Departamento" class="gf-input">
+                                    <option value="">Seleccione departamento</option>
+                                    <option>Administración</option>
+                                    <option>Operaciones</option>
+                                    <option>Bodega</option>
+                                    <option>Ventas</option>
+                                </select>
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="Puesto">Puesto</label>
+                                <input id="Puesto" name="Puesto" type="text" class="gf-input" placeholder="Ej: Asistente administrativo" />
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="Ubicacion">Ubicación</label>
+                                <input id="Ubicacion" name="Ubicacion" type="text" class="gf-input" placeholder="Ej: San José" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DATOS DEL PERMISO -->
+                    <div class="gf-form-section">
+                        <h2 class="gf-form-section-title">Datos del permiso</h2>
+
+                        <div class="gf-form-grid-2">
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="TipoPermiso">Tipo de permiso</label>
+                                <select id="TipoPermiso" name="TipoPermiso" class="gf-input" required>
+                                    <option value="">Seleccione un tipo</option>
+                                    <option>Vacaciones</option>
+                                    <option>Incapacidad</option>
+                                    <option>Permiso personal con goce</option>
+                                    <option>Permiso sin goce</option>
+                                    <option>Salida por horas</option>
+                                    <option>Otro</option>
+                                </select>
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="FechaSolicitud">Fecha de solicitud</label>
+                                <input id="FechaSolicitud" name="FechaSolicitud" type="date" class="gf-input" />
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="FechaInicio">Fecha inicio</label>
+                                <input id="FechaInicio" name="FechaInicio" type="date" class="gf-input" required />
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="FechaFin">Fecha fin</label>
+                                <input id="FechaFin" name="FechaFin" type="date" class="gf-input" required />
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="HoraInicio">Hora inicio (si aplica)</label>
+                                <input id="HoraInicio" name="HoraInicio" type="time" class="gf-input" />
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="HoraFin">Hora fin (si aplica)</label>
+                                <input id="HoraFin" name="HoraFin" type="time" class="gf-input" />
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="CantidadTiempo">Cantidad de días/horas</label>
+                                <input id="CantidadTiempo" name="CantidadTiempo" type="text" class="gf-input" placeholder="Se puede calcular automáticamente" />
+                            </div>
+
+                            <div class="gf-form-group gf-form-group-full">
+                                <label class="gf-label" for="Motivo">Motivo</label>
+                                <textarea id="Motivo" name="Motivo" class="gf-textarea" rows="3" placeholder="Describa el motivo del permiso..." required></textarea>
+                            </div>
+
+                            <div class="gf-form-group gf-form-group-full">
+                                <label class="gf-label" for="DocumentoAdjunto">Adjuntar documento (incapacidad, justificante, etc.)</label>
+                                <input id="DocumentoAdjunto" name="DocumentoAdjunto" type="file" class="gf-input" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- APROBACIÓN -->
+                    <div class="gf-form-section">
+                        <h2 class="gf-form-section-title">Flujo de aprobación</h2>
+
+                        <div class="gf-form-grid-2">
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="JefeInmediato">Jefe inmediato</label>
+                                <select id="JefeInmediato" name="JefeInmediato" class="gf-input" required>
+                                    <option value="">Seleccione un jefe</option>
+                                    <option value="1">José Ramírez</option>
+                                    <option value="2">Laura Soto</option>
+                                </select>
+                            </div>
+
+                            <div class="gf-form-group">
+                                <label class="gf-label" for="EstadoInicial">Estado inicial</label>
+                                <input id="EstadoInicial" name="EstadoInicial" type="text" class="gf-input" value="Pendiente" readonly />
+                            </div>
+
+                            <div class="gf-form-group gf-form-group-full">
+                                <label class="gf-label" for="ObservacionesInternas">Observaciones internas (opcional)</label>
+                                <textarea id="ObservacionesInternas" name="ObservacionesInternas" class="gf-textarea" rows="2" placeholder="Notas internas para el área de RRHH o administración."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACCIONES -->
+                    <div class="gf-form-actions">
+                        <button type="button" class="gf-btn gf-btn-secondary">Cancelar</button>
+                        <button type="button" class="gf-btn gf-btn-outline">Guardar borrador</button>
+                        <button type="submit" class="gf-btn gf-btn-primary">Enviar solicitud</button>
+                    </div>
+
+                </form>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="gf-footer">
+        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
+    </footer>
+
+</body>
+</html>
+
+
