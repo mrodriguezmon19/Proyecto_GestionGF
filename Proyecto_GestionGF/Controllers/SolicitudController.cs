@@ -1,9 +1,10 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Proyecto_GestionGF.Models;
-using System.Data;
 
 namespace Proyecto_GestionGF.Controllers
 {
@@ -17,31 +18,38 @@ namespace Proyecto_GestionGF.Controllers
             _environment = environment;
         }
 
-        // ====== 1) Guardar imagen como {IdSolicitud}.png en wwwroot/imagenes ======
-        private string GuardarDatosImagen(IFormFile? archivo, int idSolicitud)
+
+        private void GuardarDatosImagen(IFormFile Imagen, int ConsecutivoProducto)
         {
-            if (archivo == null || archivo.Length == 0) return string.Empty;
-
-            var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagenes");
-            if (!Directory.Exists(carpeta))
-                Directory.CreateDirectory(carpeta);
-
-            // Fuerza extensión .png como en el ejemplo del profesor:
-            var nombre = idSolicitud + ".png";
-            var rutaFisica = Path.Combine(carpeta, nombre);
-
-            using (var stream = new FileStream(rutaFisica, FileMode.Create))
+            if (Imagen != null)
             {
-                archivo.CopyTo(stream);
-            }
+                //save imagen 
+                var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "imagenes");
 
-            // ruta relativa para servir desde la web:
-            return "/imagenes/" + nombre;
+                if (!Directory.Exists(carpeta))
+                    Directory.CreateDirectory(carpeta);
+
+                var nombreImagen = ConsecutivoProducto + ".png";
+                var carpetaFinal = Path.Combine(carpeta, nombreImagen);
+
+                using (var stream = new FileStream(carpetaFinal, FileMode.Create))
+                {
+                    Imagen.CopyTo(stream);
+                }
+            }
         }
 
         [HttpGet]
         public IActionResult CrearSolicitud()
         {
+            using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+            var tipos = cn.Query<TipoPermiso>("ConsultaTipoPermisos",
+                                             commandType: CommandType.StoredProcedure);
+
+            ViewBag.TiposPermiso = new SelectList(tipos, "IdTipoPermiso", "NombrePermiso");
+
+            ViewBag.IdUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+
             return View(new Solicitud
             {
                 FechaInicio = DateTime.Today,
@@ -49,66 +57,46 @@ namespace Proyecto_GestionGF.Controllers
             });
         }
 
-        // ====== 2) Crear + guardar imagen + actualizar ruta ======
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CrearSolicitud(Solicitud solicitud, IFormFile? ArchivoAdjunto)
+        public IActionResult CrearSolicitud(Solicitud solicitud, IFormFile? ArchivoFile)
+        {
+
+            solicitud.ArchivoFile = "/imagenes/";
+            using var con = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+
+            
+            var p = new DynamicParameters();
+            p.Add("@IdUsuario", solicitud.IdUsuario);
+            p.Add("@IdTipoPermiso", solicitud.IdTipoPermiso);
+            p.Add("@FechaInicio", solicitud.FechaInicio);
+            p.Add("@FechaFinal", solicitud.FechaFinal);
+            p.Add("@Motivo", solicitud.Motivo);
+            p.Add("@ArchivoFile", solicitud.ArchivoFile);
+
+            var id = con.QueryFirstOrDefault<int>("CrearSolicitud", p, commandType: CommandType.StoredProcedure);
+
+            if (id <= 0)
+            {
+                TempData["Error"] = "No se pudo registrar la solicitud.";
+                return View(solicitud);
+            }
+
+            TempData["Ok"] = "Solicitud registrada correctamente.";
+            return RedirectToAction("CrearSolicitud");
+        }
+
+        [HttpGet]
+        public IActionResult ConsultaTipoPermisos()
         {
             using (var context = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]))
             {
-                // PASO A: Crear solicitud y recibir el Id generado (sin ruta todavía)
-                var pCrear = new DynamicParameters();
-                pCrear.Add("@IdUsuario", solicitud.IdUsuario);
-                pCrear.Add("@IdTipoPermiso", solicitud.IdTipoPermisos);
-                pCrear.Add("@FechaInicio", solicitud.FechaInicio);
-                pCrear.Add("@FechaFinal", solicitud.FechaFinal);
-                pCrear.Add("@Motivo", solicitud.Motivo);
+                var parametros = new DynamicParameters();
+                var resultado = context.Query<TipoPermiso>("ConsultaTipoPermisos", parametros);
 
-                // IMPORTANTE: que el SP retorne el IdSolicitud (SELECT SCOPE_IDENTITY())
-                var idGenerado = context.QueryFirstOrDefault<int>(
-                    "CrearSolicitud",
-                    pCrear,
-                    commandType: CommandType.StoredProcedure
-                );
-
-                if (idGenerado <= 0)
-                {
-                    ViewBag.Ok = false;
-                    ViewBag.Mensaje = "La solicitud no ha sido registrada";
-                    return View(solicitud);
-                }
-
-                // PASO B: Guardar imagen como {IdSolicitud}.png
-                string rutaRelativa = string.Empty;
-                if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
-                {
-                    rutaRelativa = GuardarDatosImagen(ArchivoAdjunto, idGenerado);
-                }
-
-                // PASO C: Actualizar la ruta en la solicitud (si hubo archivo)
-                if (!string.IsNullOrWhiteSpace(rutaRelativa))
-                {
-                    var pUpd = new DynamicParameters();
-                    pUpd.Add("@IdSolicitud", idGenerado);
-                    pUpd.Add("@ArchivoFile", rutaRelativa);
-
-                    // Crea un SP o un UPDATE directo según prefieras
-                    context.Execute(
-                        "Solicitud_ActualizarArchivo",
-                        pUpd,
-                        commandType: CommandType.StoredProcedure
-                    );
-                }
-
-                ViewBag.Ok = true;
-                ViewBag.Mensaje = "Solicitud registrada correctamente!";
-                ModelState.Clear();
-                return View(new Solicitud
-                {
-                    FechaInicio = DateTime.Today,
-                    FechaFinal = DateTime.Today
-                });
+                return Ok(resultado);
             }
         }
+
     }
 }

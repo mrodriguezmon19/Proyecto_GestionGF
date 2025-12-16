@@ -1,6 +1,8 @@
 ﻿@model Proyecto_GestionGF.Models.Solicitud
 @{
     ViewData["Title"] = "Nuevo permiso - Gestión GF";
+    // Opcional: si prefieres tomar el IdUsuario directo de sesión en la vista:
+    // var idUsuarioSesion = Context.Session.GetInt32("IdUsuario") ?? 0;
 }
 
 <!DOCTYPE html>
@@ -31,11 +33,9 @@
             <div class="gf-sidebar-title">Gestión GF</div>
             <nav class="gf-nav">
                 <ul class="gf-nav-list">
-                    <li><a href="#" class="gf-nav-link">Dashboard</a></li>
-                    <li><a href="#" class="gf-nav-link gf-nav-link-active">Permisos</a></li>
-                    <li><a href="#" class="gf-nav-link">Usuarios</a></li>
-                    <li><a href="#" class="gf-nav-link">Reportes</a></li>
-                    <li><a href="#" class="gf-nav-link">Configuración</a></li>
+                    <li><a asp-controller="Home" asp-action="Index" class="gf-nav-link">Inicio</a></li>
+                    <li><a class="gf-nav-link gf-nav-link-active">Solicitudes</a></li>
+                    <li><a asp-controller="Configuracion" asp-action="Index" class="gf-nav-link">Configuración</a></li>
                 </ul>
             </nav>
         </aside>
@@ -48,8 +48,7 @@
                     <p class="gf-page-subtitle">Registre una nueva solicitud de permiso.</p>
                 </div>
                 <div class="gf-user-info">
-                    <span class="gf-user-name">Admin: Juan Pérez</span>
-                    <a href="#" class="gf-link gf-link-logout">Cerrar sesión</a>
+                    <a asp-controller="Login" asp-action="CerrarSesion" class="gf-link gf-link-logout">Cerrar sesión</a>
                 </div>
             </div>
 
@@ -59,31 +58,27 @@
 
                     <div asp-validation-summary="ModelOnly" class="gf-alert gf-alert-error"></div>
 
-                    
-                    <div class="gf-form-section">
-                        <h2 class="gf-form-section-title">Datos del colaborador</h2>
-                        <div class="gf-form-grid-2">
-                            <div class="gf-form-group">
-                                <label class="gf-label" asp-for="IdUsuario">Colaborador</label>
-                                <select asp-for="IdUsuario" asp-items="ViewBag.Usuarios" class="gf-input">
-                                    <option value="">Seleccione un colaborador</option>
-                                </select>
-                                <span asp-validation-for="IdUsuario" class="text-danger"></span>
-                            </div>
-
-                            <div class="gf-form-group">
-                                <label class="gf-label" asp-for="IdTipoPermisos">Tipo de permiso</label>
-                                <select asp-for="IdTipoPermisos" asp-items="ViewBag.TiposPermiso" class="gf-input">
-                                    <option value="">Seleccione un tipo</option>
-                                </select>
-                                <span asp-validation-for="IdTipoPermisos" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- IdUsuario oculto (lo trae el controlador desde la sesión) -->
+                    <input type="hidden" asp-for="IdUsuario" value="@(ViewBag.IdUsuario ?? 0)" />
+                    @* Alternativa si quieres forzar desde sesión:
+                    <input type="hidden" asp-for="IdUsuario" value="@(Context.Session.GetInt32("IdUsuario") ?? 0)" />
+                    *@
 
                     <div class="gf-form-section">
-                        <h2 class="gf-form-section-title">Rango de fechas</h2>
+                        <h2 class="gf-form-section-title">Datos del permiso</h2>
                         <div class="gf-form-grid-2">
+
+                            <!-- Dropdown de Tipo de Permiso -->
+                            <div class="gf-form-group">
+                                <label class="gf-label" asp-for="IdTipoPermiso">Tipo de permiso</label>
+                                <select asp-for="IdTipoPermiso"
+                                        asp-items="@(ViewBag.TiposPermiso as IEnumerable<SelectListItem>)"
+                                        class="gf-input">
+                                    <option value="">-- Seleccione un tipo --</option>
+                                </select>
+                                <span asp-validation-for="IdTipoPermiso" class="text-danger"></span>
+                            </div>
+
                             <div class="gf-form-group">
                                 <label class="gf-label" asp-for="FechaInicio">Fecha inicio</label>
                                 <input asp-for="FechaInicio" type="date" class="gf-input" />
@@ -95,12 +90,7 @@
                                 <input asp-for="FechaFinal" type="date" class="gf-input" />
                                 <span asp-validation-for="FechaFinal" class="text-danger"></span>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="gf-form-section">
-                        <h2 class="gf-form-section-title">Motivo y soporte</h2>
-                        <div class="gf-form-grid-2">
                             <div class="gf-form-group gf-form-group-full">
                                 <label class="gf-label" asp-for="Motivo">Motivo</label>
                                 <textarea asp-for="Motivo" class="gf-textarea" rows="3" placeholder="Describa el motivo..."></textarea>
@@ -120,6 +110,18 @@
                         <button type="submit" class="gf-btn gf-btn-primary">Enviar solicitud</button>
                     </div>
                 </form>
+
+                @if (ViewBag.Ok != null)
+                {
+                    if ((bool)ViewBag.Ok)
+                    {
+                        <div class="gf-alert gf-alert-success">@ViewBag.Mensaje</div>
+                    }
+                    else
+                    {
+                        <div class="gf-alert gf-alert-error">@ViewBag.Mensaje</div>
+                    }
+                }
             </section>
         </main>
     </div>
@@ -127,7 +129,6 @@
     <footer class="gf-footer">
         <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
     </footer>
-
 
     <partial name="_ValidationScriptsPartial" />
 </body>

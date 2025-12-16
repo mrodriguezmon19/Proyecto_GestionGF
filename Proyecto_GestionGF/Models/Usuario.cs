@@ -25,6 +25,8 @@
 
         public string NombreRol { get; set; } = string.Empty;
 
+        public string NombreDepartamento { get; set; } = string.Empty;
+
 
     }
 }

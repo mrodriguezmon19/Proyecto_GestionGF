@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Dashboard - Gestión GF";
+    var nombre = ViewBag.Nombre as string ?? "Usuario";
 }
 
 <!DOCTYPE html>
@@ -16,7 +17,7 @@
     <header class="gf-header">
         <div class="gf-header-top">
             <div class="gf-logo-wrapper">
-                <img src="@Url.Content("~/img/logo.png")"
+                <img src="@Url.Content("~/img/logoGF.png")"
                      alt="Logo Grupo Fiesler"
                      class="gf-logo-img" />
             </div>
@@ -60,8 +61,8 @@
                 </div>
 
                 <div class="gf-user-info">
-                    <span class="gf-user-name">Admin: Juan Pérez</span>
-                    <a href="#" class="gf-link gf-link-logout">Cerrar sesión</a>
+                    <h1 class="gf-page-title">Hola, @nombre</h1>
+                    <a class="gf-link gf-link-logout" asp-controller="Home" asp-action="Index">Cerrar sesión</a>
                 </div>
             </div>
 
@@ -69,25 +70,25 @@
             <section class="gf-kpi-grid">
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Permisos pendientes</h2>
-                    <p class="gf-kpi-value">12</p>
+                    <p class="gf-kpi-value"></p>
                     <span class="gf-kpi-helper">En espera de aprobación</span>
                 </article>
 
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Aprobados hoy</h2>
-                    <p class="gf-kpi-value">5</p>
+                    <p class="gf-kpi-value"></p>
                     <span class="gf-kpi-helper">Últimas 24 horas</span>
                 </article>
 
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Rechazados hoy</h2>
-                    <p class="gf-kpi-value">1</p>
+                    <p class="gf-kpi-value"></p>
                     <span class="gf-kpi-helper">Últimas 24 horas</span>
                 </article>
 
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Próximos 7 días</h2>
-                    <p class="gf-kpi-value">8</p>
+                    <p class="gf-kpi-value"></p>
                     <span class="gf-kpi-helper">Permisos en calendario</span>
                 </article>
             </section>
@@ -157,44 +158,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>0012</td>
-                                <td>Ana López</td>
-                                <td>Vacaciones</td>
-                                <td>01/12/2025</td>
-                                <td>05/12/2025</td>
-                                <td><span class="gf-badge gf-badge-pending">Pendiente</span></td>
-                                <td>José Ramírez</td>
-                                <td>
-                                    <a href="#" class="gf-table-link">Ver</a> ·
-                                    <a href="#" class="gf-table-link">Aprobar</a> ·
-                                    <a href="#" class="gf-table-link">Rechazar</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>0011</td>
-                                <td>Carlos Méndez</td>
-                                <td>Incapacidad</td>
-                                <td>28/11/2025</td>
-                                <td>30/11/2025</td>
-                                <td><span class="gf-badge gf-badge-approved">Aprobado</span></td>
-                                <td>Laura Soto</td>
-                                <td>
-                                    <a href="#" class="gf-table-link">Ver</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>0010</td>
-                                <td>María Sánchez</td>
-                                <td>Permiso personal</td>
-                                <td>27/11/2025</td>
-                                <td>27/11/2025</td>
-                                <td><span class="gf-badge gf-badge-rejected">Rechazado</span></td>
-                                <td>José Ramírez</td>
-                                <td>
-                                    <a href="#" class="gf-table-link">Ver</a>
-                                </td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
