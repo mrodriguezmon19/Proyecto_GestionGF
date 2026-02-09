@@ -99,7 +99,8 @@
 
                             <div class="gf-form-group gf-form-group-full">
                                 <label class="gf-label" asp-for="ArchivoFile">Adjuntar documento</label>
-                                <input asp-for="ArchivoFile" type="file" class="gf-input" />
+                                <!--<input asp-for="ArchivoFile" type="file" class="gf-input" /> -->
+                                <input type="file" name="ArchivoAdjunto" class="gf-input" accept=".pdf,.png,.jpg,.jpeg" />
                                 <span asp-validation-for="ArchivoFile" class="text-danger"></span>
                             </div>
                         </div>

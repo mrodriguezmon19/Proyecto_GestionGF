@@ -19,7 +19,7 @@ namespace Proyecto_GestionGF.Controllers
         }
 
 
-        private void GuardarDatosImagen(IFormFile Imagen, int ConsecutivoProducto)
+        private void GuardarDatosImagenConConsecutivo(IFormFile Imagen, int ConsecutivoProducto)
         {
             if (Imagen != null)
             {
@@ -39,16 +39,37 @@ namespace Proyecto_GestionGF.Controllers
             }
         }
 
+        private string GuardarArchivo(IFormFile archivo, int idSolicitud)
+        {
+            if (archivo == null || archivo.Length == 0) return string.Empty;
+
+            var ext = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+            var permitidas = new HashSet<string> { ".pdf", ".png", ".jpg", ".jpeg" };
+
+            if (!permitidas.Contains(ext))
+                throw new InvalidOperationException("Formato no permitido. Solo PDF o imágenes (png/jpg).");
+
+            var carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "adjuntos");
+            if (!Directory.Exists(carpeta))
+                Directory.CreateDirectory(carpeta);
+
+            var nombre = $"{idSolicitud}{ext}";
+            var rutaFisica = Path.Combine(carpeta, nombre);
+
+            using (var stream = new FileStream(rutaFisica, FileMode.Create))
+            {
+                archivo.CopyTo(stream);
+            }
+
+            return "/adjuntos/" + nombre;
+        }
+
+
         [HttpGet]
         public IActionResult CrearSolicitud()
         {
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
-            var tipos = cn.Query<TipoPermiso>("ConsultaTipoPermisos",
-                                             commandType: CommandType.StoredProcedure);
-
-            ViewBag.TiposPermiso = new SelectList(tipos, "IdTipoPermiso", "NombrePermiso");
-
-            ViewBag.IdUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+            CargarTiposPermiso(cn);
 
             return View(new Solicitud
             {
@@ -59,32 +80,69 @@ namespace Proyecto_GestionGF.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CrearSolicitud(Solicitud solicitud, IFormFile? ArchivoFile)
+        public IActionResult CrearSolicitud(Solicitud solicitud, IFormFile? ArchivoAdjunto)
         {
-
-            solicitud.ArchivoFile = "/imagenes/";
             using var con = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
-            
+            // Validación simple (opcional pero recomendable)
+            if (solicitud.IdUsuario <= 0)
+                ModelState.AddModelError("", "Usuario inválido. Inicie sesión nuevamente.");
+
+            if (solicitud.IdTipoPermiso <= 0)
+                ModelState.AddModelError(nameof(solicitud.IdTipoPermiso), "Seleccione un tipo de permiso.");
+
+            if (solicitud.FechaFinal < solicitud.FechaInicio)
+                ModelState.AddModelError(nameof(solicitud.FechaFinal), "La fecha final no puede ser menor a la fecha de inicio.");
+
+            if (!ModelState.IsValid)
+            {
+                CargarTiposPermiso(con);
+                return View(solicitud);
+            }
+
+            // 1) Crear solicitud sin ruta de archivo (aún no tenemos IdSolicitud)
             var p = new DynamicParameters();
             p.Add("@IdUsuario", solicitud.IdUsuario);
             p.Add("@IdTipoPermiso", solicitud.IdTipoPermiso);
             p.Add("@FechaInicio", solicitud.FechaInicio);
             p.Add("@FechaFinal", solicitud.FechaFinal);
             p.Add("@Motivo", solicitud.Motivo);
-            p.Add("@ArchivoFile", solicitud.ArchivoFile);
+            p.Add("@ArchivoFile", ""); // vacío por ahora
 
             var id = con.QueryFirstOrDefault<int>("CrearSolicitud", p, commandType: CommandType.StoredProcedure);
 
             if (id <= 0)
             {
                 TempData["Error"] = "No se pudo registrar la solicitud.";
+                CargarTiposPermiso(con);
                 return View(solicitud);
+            }
+
+            // 2) Si adjuntó archivo, guardarlo y actualizar ruta en BD
+            if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
+            {
+                try
+                {
+                    var ruta = GuardarArchivo(ArchivoAdjunto, id);
+
+                    var pUpd = new DynamicParameters();
+                    pUpd.Add("@IdSolicitud", id);
+                    pUpd.Add("@ArchivoFile", ruta);
+
+                    con.Execute("Solicitud_ActualizarArchivo", pUpd, commandType: CommandType.StoredProcedure);
+                }
+                catch (Exception ex)
+                {
+                    // La solicitud ya está creada, pero el archivo falló
+                    TempData["Error"] = "Solicitud creada, pero el archivo no se pudo guardar: " + ex.Message;
+                    return RedirectToAction("CrearSolicitud");
+                }
             }
 
             TempData["Ok"] = "Solicitud registrada correctamente.";
             return RedirectToAction("CrearSolicitud");
         }
+
 
         [HttpGet]
         public IActionResult ConsultaTipoPermisos()
@@ -97,6 +155,14 @@ namespace Proyecto_GestionGF.Controllers
                 return Ok(resultado);
             }
         }
+
+        private void CargarTiposPermiso(SqlConnection cn)
+        {
+            var tipos = cn.Query<TipoPermiso>("ConsultaTipoPermisos", commandType: CommandType.StoredProcedure);
+            ViewBag.TiposPermiso = new SelectList(tipos, "IdTipoPermiso", "NombrePermiso");
+            ViewBag.IdUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+        }
+
 
     }
 }
