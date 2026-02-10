@@ -100,14 +100,14 @@ namespace Proyecto_GestionGF.Controllers
                 return View(solicitud);
             }
 
-            // 1) Crear solicitud sin ruta de archivo (aún no tenemos IdSolicitud)
+            // Crear solicitud sin ruta de archivo aún no tenemos IdSolicitud para relacionarla
             var p = new DynamicParameters();
             p.Add("@IdUsuario", solicitud.IdUsuario);
             p.Add("@IdTipoPermiso", solicitud.IdTipoPermiso);
             p.Add("@FechaInicio", solicitud.FechaInicio);
             p.Add("@FechaFinal", solicitud.FechaFinal);
             p.Add("@Motivo", solicitud.Motivo);
-            p.Add("@ArchivoFile", ""); // vacío por ahora
+            p.Add("@ArchivoFile", ""); // vacío temporal
 
             var id = con.QueryFirstOrDefault<int>("CrearSolicitud", p, commandType: CommandType.StoredProcedure);
 
@@ -118,7 +118,7 @@ namespace Proyecto_GestionGF.Controllers
                 return View(solicitud);
             }
 
-            // 2) Si adjuntó archivo, guardarlo y actualizar ruta en BD
+            // Si se adjunto archivo, se guarda y actualiza ruta en BD
             if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
             {
                 try
@@ -162,6 +162,23 @@ namespace Proyecto_GestionGF.Controllers
             ViewBag.TiposPermiso = new SelectList(tipos, "IdTipoPermiso", "NombrePermiso");
             ViewBag.IdUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
         }
+
+        [HttpGet]
+        public IActionResult HistorialAdmin()
+        {
+            var rol = HttpContext.Session.GetInt32("ConsecutivoPerfil");
+            if (rol != 1 && rol != 2) return RedirectToAction("MainUsuario", "Home");
+
+            using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+
+            var lista = cn.Query<SolicitudHistorialModel>(
+                "Solicitud_Historial_Admin",
+                commandType: CommandType.StoredProcedure
+            ).ToList();
+
+            return View(lista);
+        }
+
 
 
     }

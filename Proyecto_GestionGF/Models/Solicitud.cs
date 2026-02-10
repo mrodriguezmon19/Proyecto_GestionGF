@@ -17,6 +17,8 @@ namespace Proyecto_GestionGF.Models
 
         public string Motivo { get; set; } = string.Empty;
 
+        public string Estado { get; set; } = string.Empty;
+
         public string ArchivoFile { get; set; } = string.Empty;
 
     }
