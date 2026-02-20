@@ -1,0 +1,78 @@
+﻿@model Usuario
+@{
+    ViewData["Title"] = "Inicio de sesión - Gestión GF";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="gf-auth-body">
+
+    <!-- HEADER de Grupo Fiesler -->
+    <header class="gf-header">
+        <div class="gf-header-top">
+            <div class="gf-logo-wrapper">
+                <img src="@Url.Content("~/img/logoGF.png")" alt="Logo Grupo Fiesler" width="100" class="gf-logo-img" />
+            </div>
+        </div>
+
+        <div class="gf-header-bar">
+            <span class="gf-header-bar-text">
+                Calidad y servicio que marcan la diferencia
+            </span>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL DE LOGIN -->
+    <main class="gf-login-wrapper">
+        <section class="gf-login-card">
+
+            <h1 class="gf-login-title">Gestión GF</h1>
+            <p class="gf-login-subtitle">Sistema de gestión de permisos de Grupo Fiesler</p>
+
+            @* <div class="gf-alert gf-alert-error">Usuario o contraseña incorrectos</div> *@
+
+            <form asp-action="Index" asp-controller="Home" method="post" class="gf-login-form">
+
+                <div class="gf-form-group">
+                    <label for="CorreoElectronico" class="gf-label">Correo electronico</label>
+                    <input id="CorreoElectronico" name="CorreoElectronico" type="text" class="gf-input" required />
+                </div>
+
+                <div class="gf-form-group">
+                    <label for="Password" class="gf-label">Contraseña</label>
+                    <input id="Password" name="Password" type="password" class="gf-input" required />
+                </div>
+
+                <div class="gf-form-group gf-form-remember">
+                    <label class="gf-checkbox-label">
+                        <input type="checkbox" name="RememberMe" />
+                        <span>Recordar sesión en este equipo</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="gf-btn gf-btn-primary">
+                    Iniciar sesión
+                </button>
+
+                <div class="gf-login-links">
+                    <a href="#" class="gf-link">¿Olvidó su contraseña?</a>
+                    @* <a href="#" class="gf-link">Solicitar acceso</a> *@
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer class="gf-footer">
+        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
+    </footer>
+
+</body>
+</html>
+
+

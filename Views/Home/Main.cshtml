@@ -1,0 +1,189 @@
+﻿@model Proyecto_GestionGF.Models.AdminDashboardModel
+@{
+    ViewData["Title"] = "Dashboard - Gestión GF";
+    var nombre = Model?.Nombre ?? "Usuario";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="gf-dashboard-body">
+
+<header class="gf-header">
+    <div class="gf-header-top">
+        <div class="gf-logo-wrapper">
+            <img src="@Url.Content("~/img/logoGF.png")"
+                 alt="Logo Grupo Fiesler"
+                 class="gf-logo-img" />
+        </div>
+    </div>
+    <div class="gf-header-bar">
+        <span class="gf-header-bar-text">
+            Calidad y servicio que marcan la diferencia
+        </span>
+    </div>
+</header>
+
+<div class="gf-main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="gf-sidebar">
+        <div class="gf-sidebar-title">Gestión GF</div>
+        <nav class="gf-nav">
+            <ul class="gf-nav-list">
+                <li><a asp-controller="Home" asp-action="Main" class="gf-nav-link gf-nav-link-active">Dashboard</a></li>
+                <li><a asp-controller="Solicitud" asp-action="CrearSolicitud" class="gf-nav-link">Permisos</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- CONTENIDO -->
+    <main class="gf-content">
+
+        <!-- Header usuario -->
+        <div class="gf-content-header">
+            <div>
+                <h1 class="gf-page-title">Dashboard administrador</h1>
+                <p class="gf-page-subtitle">Resumen de solicitudes del personal.</p>
+            </div>
+
+            <div class="gf-user-info">
+                <h1 class="gf-page-title">Hola, @nombre</h1>
+                <a class="gf-link gf-link-logout" asp-controller="Home" asp-action="Index">Cerrar sesión</a>
+            </div>
+        </div>
+
+        <!-- FILTROS -->
+        <form asp-action="Main" method="get">
+            <section class="gf-filters-bar">
+
+                <div class="gf-filters-group">
+
+                    <div class="gf-form-group">
+                        <label class="gf-label">Desde</label>
+                        <input type="date" name="desde" class="gf-input"
+                               value="@Context.Request.Query["desde"]" />
+                    </div>
+
+                    <div class="gf-form-group">
+                        <label class="gf-label">Hasta</label>
+                        <input type="date" name="hasta" class="gf-input"
+                               value="@Context.Request.Query["hasta"]" />
+                    </div>
+
+                    <div class="gf-form-group">
+                        <label class="gf-label">Estado</label>
+                        <select name="estado" class="gf-input">
+                            <option value="">Todos</option>
+                            <option value="0" selected="@(Context.Request.Query["estado"]=="0")">Pendiente</option>
+                            <option value="1" selected="@(Context.Request.Query["estado"]=="1")">Aprobado</option>
+                            <option value="2" selected="@(Context.Request.Query["estado"]=="2")">Rechazado</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="gf-filters-actions">
+                    <a asp-action="Main" class="gf-btn gf-btn-secondary">Limpiar</a>
+                    <button type="submit" class="gf-btn gf-btn-primary">Filtrar</button>
+                </div>
+
+            </section>
+        </form>
+
+        <!-- TABLA -->
+        <section class="gf-table-section">
+
+            <div class="gf-table-header-row">
+                <h2 class="gf-section-title">Solicitudes recientes</h2>
+
+                <div class="gf-table-actions">
+                    <a asp-action="ExportarPdf"
+                       asp-route-desde="@Context.Request.Query["desde"]"
+                       asp-route-hasta="@Context.Request.Query["hasta"]"
+                       asp-route-estado="@Context.Request.Query["estado"]"
+                       class="gf-btn gf-btn-outline">
+                        Exportar PDF
+                    </a>
+
+                    <a asp-action="ExportarExcel"
+                       asp-route-desde="@Context.Request.Query["desde"]"
+                       asp-route-hasta="@Context.Request.Query["hasta"]"
+                       asp-route-estado="@Context.Request.Query["estado"]"
+                       class="gf-btn gf-btn-primary">
+                        Exportar Excel
+                    </a>
+                </div>
+            </div>
+
+            <div class="gf-table-wrapper">
+
+                <table class="gf-table">
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Colaborador</th>
+                            <th>Tipo</th>
+                            <th>Motivo</th>
+                            <th>Fecha inicio</th>
+                            <th>Fecha fin</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model?.Solicitudes == null || Model.Solicitudes.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7">No hay solicitudes registradas.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var s in Model.Solicitudes)
+                            {
+                                <tr>
+                                    <td>@s.IdSolicitud</td>
+                                    <td>@s.NombreUsuario</td>
+                                    <td>@s.NombrePermiso</td>
+                                    <td>@s.Motivo</td>
+                                    <td>@s.FechaInicio.ToString("dd-MM-yyyy")</td>
+                                    <td>@s.FechaFinal.ToString("dd-MM-yyyy")</td>
+
+                                    <td>
+                                        @if (s.Estado == 0)
+                                        {
+                                            <span class="gf-badge gf-badge-pending">Pendiente</span>
+                                        }
+                                        else if (s.Estado == 1)
+                                        {
+                                            <span class="gf-badge gf-badge-approved">Aprobado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="gf-badge gf-badge-rejected">Rechazado</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<footer class="gf-footer">
+    <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
+</footer>
+
+</body>
+</html>

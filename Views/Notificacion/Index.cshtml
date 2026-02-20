@@ -1,0 +1,84 @@
+﻿@model List<Proyecto_GestionGF.Models.NotificacionModel>
+@{
+    ViewData["Title"] = "Notificaciones - Gestión GF";
+    var noLeidas = (int)(ViewBag.NoLeidas ?? 0);
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="gf-dashboard-body">
+
+    <header class="gf-header">
+        <div class="gf-header-top">
+            <div class="gf-logo-wrapper">
+                <img src="@Url.Content("~/img/logoGF.png")" alt="Logo Grupo Fiesler" class="gf-logo-img" />
+            </div>
+        </div>
+        <div class="gf-header-bar">
+            <span class="gf-header-bar-text">Calidad y servicio que marcan la diferencia</span>
+        </div>
+    </header>
+
+    <div class="gf-main-layout">
+        <main class="gf-content" style="max-width:1000px;margin:0 auto;">
+            <div class="gf-content-header">
+                <div>
+                    <h1 class="gf-page-title">Notificaciones</h1>
+                    <p class="gf-page-subtitle">Tenés @noLeidas notificación(es) sin leer.</p>
+                </div>
+
+                <div class="gf-user-info">
+                    <form asp-action="MarcarTodasLeidas" method="post" style="display:inline;">
+                        @Html.AntiForgeryToken()
+                        <button class="gf-btn gf-btn-outline" type="submit">Marcar todas como leídas</button>
+                    </form>
+                    <a class="gf-btn gf-btn-secondary" asp-controller="Home" asp-action="Main">Volver</a>
+                </div>
+            </div>
+
+            <section class="gf-form-card">
+                @if (Model == null || Model.Count == 0)
+                {
+                    <div>No tenés notificaciones aún.</div>
+                }
+                else
+                {
+                    <div style="display:flex;flex-direction:column;gap:12px;">
+                        @foreach (var n in Model)
+                        {
+                            <div class="gf-alert @(n.Leida ? "" : "gf-alert-success")" style="display:flex;justify-content:space-between;gap:12px;">
+                                <div>
+                                    <strong>@n.Titulo</strong><br />
+                                    <span>@n.Mensaje</span><br />
+                                    <small>@n.FechaCreacion.ToString("dd-MM-yyyy HH:mm")</small>
+                                </div>
+
+                                @if (!n.Leida)
+                                {
+                                    <form asp-action="MarcarLeida" method="post" style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idNotificacion" value="@n.IdNotificacion" />
+                                        <button class="gf-btn gf-btn-primary" type="submit">Marcar leída</button>
+                                    </form>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        </main>
+    </div>
+
+    <footer class="gf-footer">
+        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
+    </footer>
+
+</body>
+</html>
+
