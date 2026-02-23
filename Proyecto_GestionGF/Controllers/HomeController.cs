@@ -166,8 +166,8 @@ namespace Proyecto_GestionGF.Controllers
             foreach (var item in lista)
             {
                 ws.Cell(fila, 1).Value = item.IdSolicitud;
-                ws.Cell(fila, 2).Value = item.NombreUsuario ?? "";
-                ws.Cell(fila, 3).Value = item.NombrePermiso ?? "";
+                ws.Cell(fila, 2).Value = item.NombreUsuario;
+                ws.Cell(fila, 3).Value = item.NombrePermiso;
                 ws.Cell(fila, 4).Value = item.FechaInicio.ToString("dd/MM/yyyy");
                 ws.Cell(fila, 5).Value = item.FechaFinal.ToString("dd/MM/yyyy");
                 ws.Cell(fila, 6).Value = item.Estado;
