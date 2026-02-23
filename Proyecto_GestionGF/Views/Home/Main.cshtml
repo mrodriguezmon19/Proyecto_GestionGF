@@ -97,54 +97,67 @@
                 </article>
             </section>
 
-            <!-- FILTROS (UI) -->
-            <section class="gf-filters-bar">
-                <div class="gf-filters-group">
-                    <div class="gf-form-group">
-                        <label class="gf-label">Desde</label>
-                        <input type="date" class="gf-input" />
+            <!-- FILTROS -->
+            <form asp-action="Main" method="get">
+                <section class="gf-filters-bar">
+
+                    <div class="gf-filters-group">
+
+                        <div class="gf-form-group">
+                            <label class="gf-label">Desde</label>
+                            <input type="date" name="desde" class="gf-input"
+                                   value="@Context.Request.Query["desde"]" />
+                        </div>
+
+                        <div class="gf-form-group">
+                            <label class="gf-label">Hasta</label>
+                            <input type="date" name="hasta" class="gf-input"
+                                   value="@Context.Request.Query["hasta"]" />
+                        </div>
+
+                        <div class="gf-form-group">
+                            <label class="gf-label">Estado</label>
+                            <select name="estado" class="gf-input">
+                                <option value="">Todos</option>
+                                <option value="0" selected="@(Context.Request.Query["estado"] == "0")">Pendiente</option>
+                                <option value="1" selected="@(Context.Request.Query["estado"] == "1")">Aprobado</option>
+                                <option value="2" selected="@(Context.Request.Query["estado"] == "2")">Rechazado</option>
+                            </select>
+                        </div>
+
                     </div>
 
-                    <div class="gf-form-group">
-                        <label class="gf-label">Hasta</label>
-                        <input type="date" class="gf-input" />
+                    <div class="gf-filters-actions">
+                        <a asp-action="Main" class="gf-btn gf-btn-secondary">Limpiar</a>
+                        <button type="submit" class="gf-btn gf-btn-primary">Filtrar</button>
                     </div>
 
-                    <div class="gf-form-group">
-                        <label class="gf-label">Estado</label>
-                        <select class="gf-input">
-                            <option value="">Todos</option>
-                            <option value="0">Pendiente</option>
-                            <option value="1">Aprobado</option>
-                            <option value="2">Rechazado</option>
-                        </select>
-                    </div>
+                </section>
+            </form>
 
-                    <div class="gf-form-group">
-                        <label class="gf-label">Tipo permiso</label>
-                        <select class="gf-input">
-                            <option value="">Todos</option>
-                            <option>Vacaciones</option>
-                            <option>Incapacidad</option>
-                            <option>Permiso personal</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="gf-filters-actions">
-                    <button class="gf-btn gf-btn-secondary" type="button">Limpiar</button>
-                    <button class="gf-btn gf-btn-primary" type="button">Filtrar</button>
-                </div>
-            </section>
 
             <!-- TABLA DE SOLICITUDES -->
-            <section class="gf-table-section">
-                <div class="gf-table-header-row">
-                    <h2 class="gf-section-title">Solicitudes recientes</h2>
-                    <div class="gf-table-actions">
-                        <button class="gf-btn gf-btn-outline" type="button">Exportar</button>
-                    </div>
+            <div class="gf-table-header-row">
+                <h2 class="gf-section-title">Solicitudes recientes</h2>
+
+                <div class="gf-table-actions">
+                    <a asp-action="ExportarPdf"
+                       asp-route-desde="@Context.Request.Query["desde"]"
+                       asp-route-hasta="@Context.Request.Query["hasta"]"
+                       asp-route-estado="@Context.Request.Query["estado"]"
+                       class="gf-btn gf-btn-outline">
+                        Exportar PDF
+                    </a>
+
+                    <a asp-action="ExportarExcel"
+                       asp-route-desde="@Context.Request.Query["desde"]"
+                       asp-route-hasta="@Context.Request.Query["hasta"]"
+                       asp-route-estado="@Context.Request.Query["estado"]"
+                       class="gf-btn gf-btn-primary">
+                        Exportar Excel
+                    </a>
                 </div>
+            </div>
 
                 <div class="gf-table-wrapper">
                     @if (TempData["Ok"] != null)

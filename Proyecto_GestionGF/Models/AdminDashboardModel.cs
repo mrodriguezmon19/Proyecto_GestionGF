@@ -3,13 +3,13 @@
     public class AdminDashboardModel
     {
         public string Nombre { get; set; } = "";
-        public List<SolicitudRow> Solicitudes { get; set; } = new();
+        public List<AdminSolicitudRow> Solicitudes { get; set; } = new();
 
         public int NotificacionesNoLeidas { get; set; }
         public List<NotificacionModel> Notificaciones { get; set; } = new();
     }
 
-    public class SolicitudRow
+    public class AdminSolicitudRow
     {
         public int IdSolicitud { get; set; }
         public string Colaborador { get; set; } = "";
