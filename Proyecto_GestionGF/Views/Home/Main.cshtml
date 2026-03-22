@@ -41,6 +41,8 @@
                 <ul class="gf-nav-list">
                     <li><a asp-controller="Home" asp-action="Main" class="gf-nav-link gf-nav-link-active">Dashboard</a></li>
                     <li><a asp-controller="Solicitud" asp-action="CrearSolicitud" class="gf-nav-link">Permisos</a></li>
+                    <li><a asp-controller="Solicitud" asp-action="HistorialAdmin" class="gf-nav-link">Historial de solicitudes</a></li>
+                    <li><a asp-controller="TipoPermiso" asp-action="Index" class="gf-nav-link">Tipos de permiso</a></li>
                     <li><a href="#" class="gf-nav-link">Usuarios</a></li>
                     <li><a href="#" class="gf-nav-link">Reportes</a></li>
                     <li><a href="#" class="gf-nav-link">Configuración</a></li>
@@ -65,36 +67,39 @@
                             <span style="margin-left:6px; font-weight:700;">(@Model.NotificacionesNoLeidas)</span>
                         }
                     </a>
-                    <h1 class="gf-page-title">Hola, @nombre</h1>
+                    <span class="gf-user-name">@nombre</span>
                     <a class="gf-link gf-link-logout" asp-controller="Home" asp-action="Index">Cerrar sesión</a>
                 </div>
             </div>
 
-            <!-- KPIs-->
+
             <section class="gf-kpi-grid">
+
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Permisos pendientes</h2>
-                    <p class="gf-kpi-value">-</p>
+                    <p class="gf-kpi-value">@Model.TotalPendientes</p>
                     <span class="gf-kpi-helper">En espera de aprobación</span>
                 </article>
 
                 <article class="gf-kpi-card">
-                    <h2 class="gf-kpi-label">Aprobados hoy</h2>
-                    <p class="gf-kpi-value">-</p>
-                    <span class="gf-kpi-helper">Últimas 24 horas</span>
+                    <h2 class="gf-kpi-label">Aprobados</h2>
+                    <p class="gf-kpi-value">@Model.TotalAprobados</p>
+                    <span class="gf-kpi-helper">Histórico</span>
                 </article>
 
                 <article class="gf-kpi-card">
-                    <h2 class="gf-kpi-label">Rechazados hoy</h2>
-                    <p class="gf-kpi-value">-</p>
-                    <span class="gf-kpi-helper">Últimas 24 horas</span>
+                    <h2 class="gf-kpi-label">Rechazados</h2>
+                    <p class="gf-kpi-value">@Model.TotalRechazados</p>
+                    <span class="gf-kpi-helper">Histórico</span>
                 </article>
+
 
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Próximos 7 días</h2>
-                    <p class="gf-kpi-value">-</p>
+                    <p class="gf-kpi-value">@Model.TotalProximos</p>
                     <span class="gf-kpi-helper">Permisos en calendario</span>
                 </article>
+
             </section>
 
             <!-- FILTROS -->
@@ -135,8 +140,7 @@
                 </section>
             </form>
 
-
-            <!-- TABLA DE SOLICITUDES -->
+            <!-- TABLA -->
             <div class="gf-table-header-row">
                 <h2 class="gf-section-title">Solicitudes recientes</h2>
 
@@ -159,122 +163,111 @@
                 </div>
             </div>
 
-                <div class="gf-table-wrapper">
-                    @if (TempData["Ok"] != null)
-                    {
-                        <div class="gf-alert gf-alert-success">@TempData["Ok"]</div>
-                    }
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
-                    }
+            <div class="gf-table-wrapper">
 
-                    <table class="gf-table">
-                        <thead>
+                @if (TempData["Ok"] != null)
+                {
+                    <div class="gf-alert gf-alert-success">@TempData["Ok"]</div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
+                }
+
+                <table class="gf-table">
+                    <thead>
+                        <tr>
+                            <th>Nº</th>
+                            <th>Colaborador</th>
+                            <th>Tipo</th>
+                            <th>Motivo</th>
+                            <th>Fecha inicio</th>
+                            <th>Fecha fin</th>
+                            <th>Estado</th>
+                            <th>Adjunto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (Model?.Solicitudes == null || Model.Solicitudes.Count == 0)
+                        {
                             <tr>
-                                <th>Nº</th>
-                                <th>Colaborador</th>
-                                <th>Tipo</th>
-                                <th>Motivo</th>
-                                <th>Fecha inicio</th>
-                                <th>Fecha fin</th>
-                                <th>Estado</th>
-                                <th>Adjunto</th>
-                                <th>Acciones</th>
+                                <td colspan="9">No hay solicitudes registradas.</td>
                             </tr>
-                        </thead>
-
-                        <tbody>
-                            @if (Model?.Solicitudes == null || Model.Solicitudes.Count == 0)
+                        }
+                        else
+                        {
+                            foreach (var s in Model.Solicitudes)
                             {
                                 <tr>
-                                    <td colspan="8">No hay solicitudes registradas.</td>
+                                    <td>@s.IdSolicitud</td>
+                                    <td>@s.Colaborador</td>
+                                    <td>@s.TipoPermiso</td>
+                                    <td>@s.Motivo</td>
+                                    <td>@s.FechaInicio.ToString("dd-MM-yyyy")</td>
+                                    <td>@s.FechaFinal.ToString("dd-MM-yyyy")</td>
+
+                                    <td>
+                                        @if (s.Estado == 0)
+                                        {
+                                            <span class="gf-badge gf-badge-pending">Pendiente</span>
+                                        }
+                                        else if (s.Estado == 1)
+                                        {
+                                            <span class="gf-badge gf-badge-approved">Aprobado</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="gf-badge gf-badge-rejected">Rechazado</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (!string.IsNullOrWhiteSpace(s.ArchivoFile))
+                                        {
+                                            <a class="gf-table-link" href="@s.ArchivoFile" target="_blank">Ver</a>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
+
+                                    <td>
+                                        @if (s.Estado == 0)
+                                        {
+                                            <div style="display:flex; gap:8px;">
+                                                <form asp-controller="Solicitud" asp-action="Aprobar" method="post">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="idSolicitud" value="@s.IdSolicitud" />
+                                                    <button type="submit" class="gf-btn gf-btn-primary">Aprobar</button>
+                                                </form>
+
+                                                <a class="gf-btn gf-btn-primary"
+                                                   asp-controller="Solicitud"
+                                                   asp-action="Rechazar"
+                                                   asp-route-id="@s.IdSolicitud">
+                                                    Rechazar
+                                                </a>
+                                            </div>
+                                        }
+                                        else if (s.Estado == 2 && !string.IsNullOrWhiteSpace(s.MotivoRechazo))
+                                        {
+                                            <span class="gf-table-link" title="@s.MotivoRechazo">Ver motivo</span>
+                                        }
+                                        else
+                                        {
+                                            <span>-</span>
+                                        }
+                                    </td>
                                 </tr>
                             }
-                            else
-                            {
-                                foreach (var s in Model.Solicitudes)
-                                {
-                                    <tr>
-                                        <td>@s.IdSolicitud</td>
-                                        <td>@s.Colaborador</td>
-                                        <td>@s.TipoPermiso</td>
-                                        <td>@s.Motivo</td>
-                                        <td>@s.FechaInicio.ToString("dd-MM-yyyy")</td>
-                                        <td>@s.FechaFinal.ToString("dd-MM-yyyy")</td>
+                        }
+                    </tbody>
 
-                                        <td>
-                                            @if (s.Estado == 0)
-                                            {
-                                                <span class="gf-badge gf-badge-pending">Pendiente</span>
-                                            }
-                                            else if (s.Estado == 1)
-                                            {
-                                                <span class="gf-badge gf-badge-approved">Aprobado</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="gf-badge gf-badge-rejected">Rechazado</span>
-                                            }
-                                        </td>
-
-                                        <td>
-                                            @if (!string.IsNullOrWhiteSpace(s.ArchivoFile))
-                                            {
-                                                <a class="gf-table-link" href="@s.ArchivoFile" target="_blank">Ver</a>
-                                            }
-                                            else
-                                            {
-                                                <span>-</span>
-                                            }
-                                        </td>
-
-                                        <td>
-                                            @* ACCIONES *@
-                                            @if (s.Estado == 0)
-                                            {
-                                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                                    <form asp-controller="Solicitud" asp-action="Aprobar" method="post" style="display:inline;">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="idSolicitud" value="@s.IdSolicitud" />
-                                                        <button type="submit" class="gf-btn gf-btn-primary">Aprobar</button>
-                                                    </form>
-
-                                                    @* Rechazar = ir a pantalla para capturar motivo *@
-                                                    <a class="gf-btn gf-btn-primary"
-                                                       asp-controller="Solicitud"
-                                                       asp-action="Rechazar"
-                                                       asp-route-id="@s.IdSolicitud">
-                                                        Rechazar
-                                                    </a>
-                                                </div>
-                                            }
-                                            else if (s.Estado == 2)
-                                            {
-                                                @* Ver motivo (tooltip) *@
-                                                @* Mouse sobre "Ver motivo" *@
-                                                if (!string.IsNullOrWhiteSpace(s.MotivoRechazo))
-                                                {
-                                                    <span class="gf-table-link" title="@s.MotivoRechazo">Ver motivo</span>
-                                                }
-                                                else
-                                                {
-                                                    <span>-</span>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                <span>-</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-
-                    </table>
-                </div>
-            </section>
+                </table>
+            </div>
 
         </main>
     </div>

@@ -1,0 +1,69 @@
+﻿@model Proyecto_GestionGF.Models.TipoPermiso
+@{
+    ViewData["Title"] = "Editar tipo de permiso";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="gf-dashboard-body">
+
+    <header class="gf-header">
+        <div class="gf-header-top">
+            <div class="gf-logo-wrapper">
+                <img src="@Url.Content("~/img/logoGF.png")" alt="Logo Grupo Fiesler" class="gf-logo-img" />
+            </div>
+        </div>
+        <div class="gf-header-bar">
+            <span class="gf-header-bar-text">Calidad y servicio que marcan la diferencia</span>
+        </div>
+    </header>
+
+    <div class="gf-main-layout">
+        <main class="gf-content" style="max-width:900px;margin:0 auto;">
+            <div class="gf-content-header">
+                <div>
+                    <h1 class="gf-page-title">Editar tipo de permiso</h1>
+                    <p class="gf-page-subtitle">Modifique la información del tipo de permiso.</p>
+                </div>
+            </div>
+
+            <section class="gf-form-card">
+                <form asp-action="Edit" asp-controller="TipoPermiso" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="IdTipoPermiso" />
+
+                    <div class="gf-form-group">
+                        <label class="gf-label" asp-for="NombrePermiso">Nombre del permiso</label>
+                        <input asp-for="NombrePermiso" class="gf-input" />
+                        <span asp-validation-for="NombrePermiso" class="text-danger"></span>
+                    </div>
+
+                    <div class="gf-form-group">
+                        <label class="gf-label" asp-for="Descripcion">Descripción</label>
+                        <textarea asp-for="Descripcion" class="gf-textarea" rows="4"></textarea>
+                        <span asp-validation-for="Descripcion" class="text-danger"></span>
+                    </div>
+
+                    <div class="gf-form-actions">
+                        <a asp-action="Index" class="gf-btn gf-btn-secondary">Cancelar</a>
+                        <button type="submit" class="gf-btn gf-btn-primary">Actualizar</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <footer class="gf-footer">
+        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
+    </footer>
+
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

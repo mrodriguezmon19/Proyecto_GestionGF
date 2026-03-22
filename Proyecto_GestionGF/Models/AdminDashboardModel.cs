@@ -7,6 +7,11 @@
 
         public int NotificacionesNoLeidas { get; set; }
         public List<NotificacionModel> Notificaciones { get; set; } = new();
+
+        public int TotalPendientes { get; set; }
+        public int TotalAprobados { get; set; }
+        public int TotalRechazados { get; set; }
+        public int TotalProximos { get; set; }
     }
 
     public class AdminSolicitudRow

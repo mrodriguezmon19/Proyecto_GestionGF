@@ -77,26 +77,32 @@
 
             <!-- KPIs-->
             <section class="gf-kpi-grid">
+
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Pendientes</h2>
-                    <p class="gf-kpi-value">-</p>
+                    <p class="gf-kpi-value">@Model.TotalPendientes</p>
                     <span class="gf-kpi-helper">En revisión</span>
                 </article>
+
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Aprobados</h2>
-                    <p class="gf-kpi-value">-</p>
+                    <p class="gf-kpi-value">@Model.TotalAprobados</p>
                     <span class="gf-kpi-helper">Histórico</span>
                 </article>
+
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Rechazados</h2>
-                    <p class="gf-kpi-value">-</p>
+                    <p class="gf-kpi-value">@Model.TotalRechazados</p>
                     <span class="gf-kpi-helper">Histórico</span>
                 </article>
+
+
                 <article class="gf-kpi-card">
                     <h2 class="gf-kpi-label">Próximos</h2>
-                    <p class="gf-kpi-value">-</p>
+                    <p class="gf-kpi-value">@Model.TotalProximos</p>
                     <span class="gf-kpi-helper">En próximos 7 días</span>
                 </article>
+
             </section>
 
             <!-- Tabla de últimas solicitudes -->

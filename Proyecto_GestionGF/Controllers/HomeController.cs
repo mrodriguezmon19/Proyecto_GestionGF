@@ -96,42 +96,90 @@ namespace Proyecto_GestionGF.Controllers
 
             var vm = new AdminDashboardModel
             {
-                Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador"
+                Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador",
             };
 
+
             vm.Solicitudes = cn.Query<AdminSolicitudRow>(
-                "SolicitudHistorialAdmin_Filtro",
-                new
-                {
-                    Desde = desde,
-                    Hasta = hasta,
-                    Estado = estado
-                },
-                commandType: CommandType.StoredProcedure
-            ).ToList();
+                    "SolicitudHistorialAdmin_Filtro",
+                    new
+                    {
+                        Desde = desde,
+                        Hasta = hasta,
+                        Estado = estado,
+                    },
+                    commandType: CommandType.StoredProcedure
+                )
+                .ToList();
+
+
+            vm.TotalPendientes = cn.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM Solicitud WHERE Estado = 0"
+            );
+
+            vm.TotalAprobados = cn.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM Solicitud WHERE Estado = 1"
+            );
+
+            vm.TotalRechazados = cn.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM Solicitud WHERE Estado = 2"
+            );
+            vm.TotalProximos = cn.ExecuteScalar<int>(
+                @"SELECT COUNT(*) 
+                FROM Solicitud 
+                WHERE FechaInicio BETWEEN CAST(GETDATE() AS DATE) 
+                AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))"
+            );
 
             return View(vm);
         }
 
-        //Main Usuario
+        // Main Usuario
         [HttpGet]
         public IActionResult MainUsuario()
         {
             var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
-            if (idUsuario <= 0) return RedirectToAction("Index");
+            if (idUsuario <= 0)
+                return RedirectToAction("Index");
 
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
             var vm = new UsuarioDashboardModel
             {
-                Nombre = HttpContext.Session.GetString("Nombre") ?? "Usuario"
+                Nombre = HttpContext.Session.GetString("Nombre") ?? "Usuario",
             };
 
             vm.UltimasSolicitudes = cn.Query<UsuarioSolicitudRow>(
-                "Usuario_SolicitudesRecientes",
-                new { IdUsuario = idUsuario, Top = 10 },
-                commandType: CommandType.StoredProcedure
-            ).ToList();
+                    "Usuario_SolicitudesRecientes",
+                    new { IdUsuario = idUsuario, Top = 10 },
+                    commandType: CommandType.StoredProcedure
+                )
+                .ToList();
+
+
+
+            vm.TotalPendientes = cn.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM Solicitud WHERE Estado = 0 AND IdUsuario = @IdUsuario",
+                new { IdUsuario = idUsuario }
+            );
+
+            vm.TotalAprobados = cn.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM Solicitud WHERE Estado = 1 AND IdUsuario = @IdUsuario",
+                new { IdUsuario = idUsuario }
+            );
+
+            vm.TotalRechazados = cn.ExecuteScalar<int>(
+                "SELECT COUNT(*) FROM Solicitud WHERE Estado = 2 AND IdUsuario = @IdUsuario",
+                new { IdUsuario = idUsuario }
+            );
+            vm.TotalProximos = cn.ExecuteScalar<int>(
+                @"SELECT COUNT(*) 
+                FROM Solicitud 
+                WHERE IdUsuario = @IdUsuario
+                AND FechaInicio BETWEEN CAST(GETDATE() AS DATE) 
+                AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))",
+                new { IdUsuario = idUsuario }
+            );
 
             return View(vm); // Views/Home/MainUsuario.cshtml
         }
@@ -166,8 +214,8 @@ namespace Proyecto_GestionGF.Controllers
             foreach (var item in lista)
             {
                 ws.Cell(fila, 1).Value = item.IdSolicitud;
-                ws.Cell(fila, 2).Value = item.NombreUsuario;
-                ws.Cell(fila, 3).Value = item.NombrePermiso;
+                ws.Cell(fila, 2).Value = item.NombreUsuario ?? "";
+                ws.Cell(fila, 3).Value = item.NombrePermiso ?? "";
                 ws.Cell(fila, 4).Value = item.FechaInicio.ToString("dd/MM/yyyy");
                 ws.Cell(fila, 5).Value = item.FechaFinal.ToString("dd/MM/yyyy");
                 ws.Cell(fila, 6).Value = item.Estado;
@@ -245,4 +293,5 @@ namespace Proyecto_GestionGF.Controllers
 
     }
 }
+
 

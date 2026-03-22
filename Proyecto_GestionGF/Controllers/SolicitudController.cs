@@ -149,16 +149,17 @@ namespace Proyecto_GestionGF.Controllers
         [HttpGet]
         public IActionResult HistorialAdmin()
         {
-            var rol = HttpContext.Session.GetInt32("ConsecutivoPerfil");
+            var rol = HttpContext.Session.GetInt32("IdRol");
             if (rol != 1 && rol != 2) return RedirectToAction("MainUsuario", "Home");
 
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
             var lista = cn.Query<SolicitudHistorialModel>(
-                "Solicitud_Historial_Admin",
+                "SolicitudHistorialAdmin",
                 commandType: CommandType.StoredProcedure
             ).ToList();
 
+            ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador";
             return View(lista);
         }
 
@@ -230,6 +231,23 @@ namespace Proyecto_GestionGF.Controllers
                 : "No se pudo cancelar (puede que ya no esté pendiente).";
 
             return RedirectToAction("MainUsuario", "Home");
+        }
+
+        //Se muestra el historial de solicitudes por usuario
+        [HttpGet]
+        public IActionResult MisSolicitudes()
+        {
+            using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario");
+
+            var solicitudes = cn.Query<Solicitud>(
+                    "SELECT * FROM Solicitud WHERE IdUsuario = @IdUsuario",
+                    new { IdUsuario = idUsuario }
+                )
+                .ToList();
+
+            return View(solicitudes);
         }
 
 
