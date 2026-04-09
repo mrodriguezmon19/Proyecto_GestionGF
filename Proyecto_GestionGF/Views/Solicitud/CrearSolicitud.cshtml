@@ -32,10 +32,12 @@
             <div class="gf-sidebar-title">Gestión GF</div>
             <nav class="gf-nav">
                 <ul class="gf-nav-list">
-                    <li><a class="gf-nav-link gf-nav-link-active" asp-controller="Home" asp-action="MainUsuario">Mi panel</a></li>
-                    <li><a class="gf-nav-link" asp-controller="Solicitud" asp-action="CrearSolicitud">Nueva solicitud</a></li>
-                    <li><a class="gf-nav-link" asp-controller="Solicitud" asp-action="MisSolicitudes">Mis solicitudes</a></li>
-                    <li><a class="gf-nav-link" asp-controller="Home" asp-action="Index">Cerrar sesión</a></li>
+                    <li><a asp-controller="Home" asp-action="Main" class="gf-nav-link">Dashboard</a></li>
+                    <li><a asp-controller="Solicitud" asp-action="HistorialAdmin" class="gf-nav-link gf-nav-link-active">Historial de solicitudes</a></li>
+                    <li><a asp-controller="TipoPermiso" asp-action="Index" class="gf-nav-link">Tipos de permiso</a></li>
+                    <li><a href="#" class="gf-nav-link">Usuarios</a></li>
+                    <li><a href="#" class="gf-nav-link">Reportes</a></li>
+                    <li><a href="#" class="gf-nav-link">Configuración</a></li>
                 </ul>
             </nav>
         </aside>
@@ -86,22 +88,21 @@
                             </div>
 
                             <div class="gf-form-group">
-                                <label class="gf-label" asp-for="FechaFinal">Fecha fin</label>
+                                <label class="gf-label" asp-for="FechaFinal">Fecha final</label>
                                 <input asp-for="FechaFinal" type="date" class="gf-input" />
                                 <span asp-validation-for="FechaFinal" class="text-danger"></span>
                             </div>
 
                             <div class="gf-form-group gf-form-group-full">
                                 <label class="gf-label" asp-for="Motivo">Motivo</label>
-                                <textarea asp-for="Motivo" class="gf-textarea" rows="3" placeholder="Describa el motivo..."></textarea>
+                                <textarea asp-for="Motivo" class="gf-textarea" rows="4"></textarea>
                                 <span asp-validation-for="Motivo" class="text-danger"></span>
                             </div>
 
                             <div class="gf-form-group gf-form-group-full">
-                                <label class="gf-label" asp-for="ArchivoFile">Adjuntar documento</label>
-                                <!--<input asp-for="ArchivoFile" type="file" class="gf-input" /> -->
+                                <label class="gf-label">Adjuntar documento</label>
                                 <input type="file" name="ArchivoAdjunto" class="gf-input" accept=".pdf,.png,.jpg,.jpeg" />
-                                <span asp-validation-for="ArchivoFile" class="text-danger"></span>
+                                <span class="text-danger">@Html.ValidationMessage("ArchivoAdjunto")</span>
                             </div>
                         </div>
                     </div>

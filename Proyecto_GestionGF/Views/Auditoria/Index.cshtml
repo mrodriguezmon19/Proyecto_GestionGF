@@ -1,6 +1,6 @@
-﻿@model List<Proyecto_GestionGF.Models.TipoPermiso>
+﻿@model List<Proyecto_GestionGF.Models.AuditoriaModel>
 @{
-    ViewData["Title"] = "Tipos de permiso - Gestión GF";
+    ViewData["Title"] = "Auditoría - Gestión GF";
     var nombre = ViewBag.Nombre as string ?? "Administrador";
 }
 
@@ -32,12 +32,10 @@
             <nav class="gf-nav">
                 <ul class="gf-nav-list">
                     <li><a asp-controller="Home" asp-action="Main" class="gf-nav-link">Dashboard</a></li>
-                    <li><a asp-controller="Solicitud" asp-action="HistorialAdmin" class="gf-nav-link gf-nav-link-active">Historial de solicitudes</a></li>
+                    <li><a asp-controller="Solicitud" asp-action="HistorialAdmin" class="gf-nav-link">Historial de solicitudes</a></li>
                     <li><a asp-controller="TipoPermiso" asp-action="Index" class="gf-nav-link">Tipos de permiso</a></li>
-                    <li><a asp-controller="Auditoria" asp-action="Index" class="gf-nav-link">Auditoría</a></li>
-                    <li><a href="#" class="gf-nav-link">Usuarios</a></li>
-                    <li><a href="#" class="gf-nav-link">Reportes</a></li>
-                    <li><a href="#" class="gf-nav-link">Configuración</a></li>
+                    <li><a asp-controller="Auditoria" asp-action="Index" class="gf-nav-link gf-nav-link-active">Auditoría</a></li>
+                    <li><a class="gf-nav-link" asp-controller="Home" asp-action="CerrarSesion">Cerrar sesión</a></li>
                 </ul>
             </nav>
         </aside>
@@ -45,8 +43,8 @@
         <main class="gf-content">
             <div class="gf-content-header">
                 <div>
-                    <h1 class="gf-page-title">Tipos de permiso</h1>
-                    <p class="gf-page-subtitle">Administre los tipos de permiso disponibles en el sistema.</p>
+                    <h1 class="gf-page-title">Auditoría de solicitudes</h1>
+                    <p class="gf-page-subtitle">Historial de acciones realizadas sobre solicitudes y resultados.</p>
                 </div>
 
                 <div class="gf-user-info">
@@ -55,38 +53,28 @@
                 </div>
             </div>
 
-            @if (TempData["Ok"] != null)
-            {
-                <div class="gf-alert gf-alert-success">@TempData["Ok"]</div>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
-            }
-
             <section class="gf-table-section">
-                <div class="gf-table-header-row">
-                    <h2 class="gf-section-title">Listado de tipos de permiso</h2>
-                    <div class="gf-table-actions">
-                        <a asp-controller="TipoPermiso" asp-action="Create" class="gf-btn gf-btn-primary">Nuevo tipo</a>
-                    </div>
-                </div>
-
                 <div class="gf-table-wrapper">
                     <table class="gf-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Acciones</th>
+                                <th>ID Auditoría</th>
+                                <th>Solicitud</th>
+                                <th>Usuario</th>
+                                <th>Rol</th>
+                                <th>Departamento</th>
+                                <th>Acción</th>
+                                <th>Resultado</th>
+                                <th>Motivo rechazo</th>
+                                <th>Fecha</th>
+                                <th>Estación/IP</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (Model == null || Model.Count == 0)
                             {
                                 <tr>
-                                    <td colspan="4">No hay tipos de permiso registrados.</td>
+                                    <td colspan="10">No hay registros de auditoría.</td>
                                 </tr>
                             }
                             else
@@ -94,17 +82,16 @@
                                 foreach (var item in Model)
                                 {
                                     <tr>
-                                        <td>@item.IdTipoPermiso</td>
-                                        <td>@item.NombrePermiso</td>
-                                        <td>@item.Descripcion</td>
-                                        <td>
-                                            <a asp-controller="TipoPermiso"
-                                               asp-action="Edit"
-                                               asp-route-id="@item.IdTipoPermiso"
-                                               class="gf-table-link">
-                                                Editar
-                                            </a>
-                                        </td>
+                                        <td>@item.IdAuditoria</td>
+                                        <td>@item.IdSolicitud</td>
+                                        <td>@item.NombreUsuario</td>
+                                        <td>@item.NombreRol</td>
+                                        <td>@item.NombreDepartamento</td>
+                                        <td>@item.Accion</td>
+                                        <td>@item.Resultado</td>
+                                        <td>@(string.IsNullOrWhiteSpace(item.MotivoRechazo) ? "-" : item.MotivoRechazo)</td>
+                                        <td>@item.FechaCambio.ToString("dd-MM-yyyy HH:mm")</td>
+                                        <td>@(string.IsNullOrWhiteSpace(item.EstacionTrabajo) ? "-" : item.EstacionTrabajo)</td>
                                     </tr>
                                 }
                             }

@@ -9,6 +9,7 @@ using iText.Layout;
 using iText.Layout.Element;
 using iText.Kernel.Font;
 using iText.IO.Font.Constants;
+using Proyecto_GestionGF.Filters;
 
 
 
@@ -86,6 +87,7 @@ namespace Proyecto_GestionGF.Controllers
 
 
         // Main Administrador
+        [OnlyAdminFilter]
         public IActionResult Main(DateTime? desde, DateTime? hasta, int? estado)
         {
             var rol = HttpContext.Session.GetInt32("IdRol");
@@ -135,6 +137,7 @@ namespace Proyecto_GestionGF.Controllers
         }
 
         // Main Usuario
+        [OnlyUserFilter]
         [HttpGet]
         public IActionResult MainUsuario()
         {
@@ -291,6 +294,12 @@ namespace Proyecto_GestionGF.Controllers
         }
 
 
+        [HttpGet]
+        public IActionResult CerrarSesion()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Index");
+        }
     }
 }
 

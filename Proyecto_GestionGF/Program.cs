@@ -8,7 +8,6 @@ builder.Services.AddControllersWithViews(o =>
     o.Filters.Add<AuditoriaFiltro>();
 });
 
-// Session
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(60);
@@ -21,9 +20,7 @@ var app = builder.Build();
 app.UseStaticFiles();
 app.UseRouting();
 
-app.MapControllers();
-
-app.UseSession(); // <-- importante: antes de UseEndpoints
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",

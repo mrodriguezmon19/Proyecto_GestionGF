@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
+using Proyecto_GestionGF.Filters;
 using Proyecto_GestionGF.Models;
 
 namespace Proyecto_GestionGF.Controllers
@@ -45,7 +46,7 @@ namespace Proyecto_GestionGF.Controllers
             return "/adjuntos/" + nombre;
         }
 
-
+        [OnlyUserFilter]
         [HttpGet]
         public IActionResult CrearSolicitud()
         {
@@ -59,21 +60,47 @@ namespace Proyecto_GestionGF.Controllers
             });
         }
 
+        [OnlyUserFilter]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult CrearSolicitud(Solicitud solicitud, IFormFile? ArchivoAdjunto)
         {
             using var con = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
-            // Validación simple
+            // Reforzar IdUsuario desde sesión por seguridad
+            solicitud.IdUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+
             if (solicitud.IdUsuario <= 0)
-                ModelState.AddModelError("", "Usuario inválido. Inicie sesión nuevamente.");
+                ModelState.AddModelError("", "Su sesión no es válida. Inicie sesión nuevamente.");
 
             if (solicitud.IdTipoPermiso <= 0)
-                ModelState.AddModelError(nameof(solicitud.IdTipoPermiso), "Seleccione un tipo de permiso.");
+                ModelState.AddModelError(nameof(solicitud.IdTipoPermiso), "Debe seleccionar un tipo de permiso.");
+
+            if (solicitud.FechaInicio == default)
+                ModelState.AddModelError(nameof(solicitud.FechaInicio), "Debe seleccionar la fecha de inicio.");
+
+            if (solicitud.FechaFinal == default)
+                ModelState.AddModelError(nameof(solicitud.FechaFinal), "Debe seleccionar la fecha final.");
 
             if (solicitud.FechaFinal < solicitud.FechaInicio)
                 ModelState.AddModelError(nameof(solicitud.FechaFinal), "La fecha final no puede ser menor a la fecha de inicio.");
+
+            if (string.IsNullOrWhiteSpace(solicitud.Motivo))
+                ModelState.AddModelError(nameof(solicitud.Motivo), "Debe ingresar el motivo de la solicitud.");
+
+            // Validación opcional del archivo
+            if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
+            {
+                var ext = Path.GetExtension(ArchivoAdjunto.FileName).ToLowerInvariant();
+                var permitidas = new HashSet<string> { ".pdf", ".png", ".jpg", ".jpeg" };
+
+                if (!permitidas.Contains(ext))
+                    ModelState.AddModelError("ArchivoAdjunto", "Solo se permiten archivos PDF o imágenes (.png, .jpg, .jpeg).");
+
+                // ejemplo: máximo 5 MB
+                if (ArchivoAdjunto.Length > 5 * 1024 * 1024)
+                    ModelState.AddModelError("ArchivoAdjunto", "El archivo no puede superar los 5 MB.");
+            }
 
             if (!ModelState.IsValid)
             {
@@ -81,16 +108,20 @@ namespace Proyecto_GestionGF.Controllers
                 return View(solicitud);
             }
 
-            // Crear solicitud sin ruta de archivo aún no se tiene IdSolicitud para relacionarla
             var p = new DynamicParameters();
             p.Add("@IdUsuario", solicitud.IdUsuario);
             p.Add("@IdTipoPermiso", solicitud.IdTipoPermiso);
             p.Add("@FechaInicio", solicitud.FechaInicio);
             p.Add("@FechaFinal", solicitud.FechaFinal);
-            p.Add("@Motivo", solicitud.Motivo);
-            p.Add("@ArchivoFile", ""); // vacio temporalmente
+            p.Add("@Motivo", solicitud.Motivo.Trim());
+            p.Add("@ArchivoFile", "");
+            p.Add("@EstacionTrabajo", HttpContext.Connection.RemoteIpAddress?.ToString());
 
-            var id = con.QueryFirstOrDefault<int>("CrearSolicitud", p, commandType: CommandType.StoredProcedure);
+            var id = con.QueryFirstOrDefault<int>(
+                "CrearSolicitud",
+                p,
+                commandType: CommandType.StoredProcedure
+            );
 
             if (id <= 0)
             {
@@ -99,7 +130,6 @@ namespace Proyecto_GestionGF.Controllers
                 return View(solicitud);
             }
 
-            // Si se adjunta archivo, se guarda y actualiza ruta en BD
             if (ArchivoAdjunto != null && ArchivoAdjunto.Length > 0)
             {
                 try
@@ -114,8 +144,7 @@ namespace Proyecto_GestionGF.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // La solicitud ya está creada, pero el archivo falló
-                    TempData["Error"] = "Solicitud creada, pero el archivo no se pudo guardar: " + ex.Message;
+                    TempData["Error"] = "La solicitud fue registrada, pero el archivo no se pudo guardar: " + ex.Message;
                     return RedirectToAction("CrearSolicitud");
                 }
             }
@@ -173,10 +202,15 @@ namespace Proyecto_GestionGF.Controllers
 
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
             var filas = cn.QueryFirstOrDefault<int>(
-                "Solicitud_Aprobar",
-                new { IdSolicitud = idSolicitud },
-                commandType: CommandType.StoredProcedure
-            );
+       "Solicitud_Aprobar",
+       new
+       {
+           IdSolicitud = idSolicitud,
+           IdAdmin = HttpContext.Session.GetInt32("IdUsuario"),
+           EstacionTrabajo = HttpContext.Connection.RemoteIpAddress?.ToString()
+       },
+       commandType: CommandType.StoredProcedure
+               );
 
             TempData["Ok"] = filas > 0 ? "Solicitud aprobada." : "No se pudo aprobar (puede que ya no esté pendiente).";
             return RedirectToAction("Main", "Home");
@@ -201,10 +235,16 @@ namespace Proyecto_GestionGF.Controllers
 
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
             var filas = cn.QueryFirstOrDefault<int>(
-                "Solicitud_Rechazar",
-                new { IdSolicitud = m.IdSolicitud, MotivoRechazo = m.MotivoRechazo },
-                commandType: CommandType.StoredProcedure
-            );
+     "Solicitud_Rechazar",
+     new
+     {
+         IdSolicitud = m.IdSolicitud,
+         MotivoRechazo = m.MotivoRechazo,
+         IdAdmin = HttpContext.Session.GetInt32("IdUsuario"),
+         EstacionTrabajo = HttpContext.Connection.RemoteIpAddress?.ToString()
+     },
+     commandType: CommandType.StoredProcedure
+             );
 
             TempData["Ok"] = filas > 0 ? "Solicitud rechazada." : "No se pudo rechazar (puede que ya no esté pendiente).";
             return RedirectToAction("Main", "Home");
