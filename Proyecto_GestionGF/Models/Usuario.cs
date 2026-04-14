@@ -27,6 +27,10 @@
 
         public string NombreDepartamento { get; set; } = string.Empty;
 
+        public int IntentosFallidos { get; set; }
+        public bool Bloqueado { get; set; }
+        public DateTime? FechaBloqueo { get; set; }
+
 
     }
 }

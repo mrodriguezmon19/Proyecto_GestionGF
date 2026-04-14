@@ -44,32 +44,87 @@ namespace Proyecto_GestionGF.Controllers
             {
                 using (var context = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]))
                 {
-                    var parametros = new DynamicParameters();
-                    parametros.Add("@CorreoElectronico", usuario.CorreoElectronico);
-                    parametros.Add("@Password", usuario.Password);
 
-                    var resultado = context.QueryFirstOrDefault<Usuario>(
-                        "InicioSesion",
-                        parametros,
-                        commandType: CommandType.StoredProcedure
-                    );
+                    var usuarioBD = context.QueryFirstOrDefault<Usuario>(
+                        "SELECT * FROM Usuario WHERE CorreoElectronico = @correo",
+                        new { correo = usuario.CorreoElectronico });
 
-                    if (resultado == null)
+                    if (usuarioBD == null)
                     {
-                        TempData["Error"] = "Usuario o contraseña incorrectos.";
+                        TempData["Error"] = "Usuario no encontrado";
                         return View();
                     }
 
-                    HttpContext.Session.SetInt32("IdUsuario", resultado.IdUsuario);
-                    HttpContext.Session.SetString("Nombre", resultado.Nombre ?? string.Empty);
-                    HttpContext.Session.SetInt32("IdRol", resultado.IdRol);
-                    HttpContext.Session.SetString("Correo", resultado.CorreoElectronico ?? string.Empty);
-                    HttpContext.Session.SetString("Perfil", resultado.NombreRol ?? string.Empty);
 
-                    // Ruteo por rol:
-                    if (resultado.IdRol == 1 || resultado.IdRol == 2)
+                    if (usuarioBD.Bloqueado && usuarioBD.FechaBloqueo != null)
                     {
+                        if (DateTime.Now >= usuarioBD.FechaBloqueo.Value.AddMinutes(5))
+                        {
+                            context.Execute(
+                                @"UPDATE Usuario 
+                          SET Bloqueado = 0, IntentosFallidos = 0, FechaBloqueo = NULL 
+                          WHERE IdUsuario = @id",
+                                new { id = usuarioBD.IdUsuario });
 
+                            usuarioBD.Bloqueado = false;
+                            usuarioBD.IntentosFallidos = 0;
+                        }
+                    }
+                    if (usuarioBD.Bloqueado)
+                    {
+                        TempData["Error"] = "Cuenta bloqueada. Intente nuevamente en 5 minutos.";
+                        return View();
+                    }
+                    if (usuarioBD.Password != usuario.Password)
+                    {
+                        int intentos = usuarioBD.IntentosFallidos + 1;
+                        bool bloquear = intentos >= 5;
+
+                        context.Execute(
+                            @"UPDATE Usuario 
+                      SET IntentosFallidos = @intentos,
+                          Bloqueado = @bloqueado,
+                          FechaBloqueo = CASE 
+                              WHEN @bloqueado = 1 THEN GETDATE() 
+                              ELSE FechaBloqueo 
+                          END
+                      WHERE IdUsuario = @id",
+                            new
+                            {
+                                intentos,
+                                bloqueado = bloquear,
+                                id = usuarioBD.IdUsuario
+                            });
+
+                        if (bloquear)
+                        {
+                            TempData["Error"] = "Cuenta bloqueada por 5 intentos fallidos";
+                        }
+                        else
+                        {
+                            TempData["Error"] = $"Credenciales incorrectas. Intento {intentos}/5";
+                        }
+
+                        return View();
+                    }
+
+
+                    context.Execute(
+                        @"UPDATE Usuario 
+                  SET IntentosFallidos = 0, Bloqueado = 0, FechaBloqueo = NULL 
+                  WHERE IdUsuario = @id",
+                        new { id = usuarioBD.IdUsuario });
+
+
+                    HttpContext.Session.SetInt32("IdUsuario", usuarioBD.IdUsuario);
+                    HttpContext.Session.SetString("Nombre", usuarioBD.Nombre ?? string.Empty);
+                    HttpContext.Session.SetInt32("IdRol", usuarioBD.IdRol);
+                    HttpContext.Session.SetString("Correo", usuarioBD.CorreoElectronico ?? string.Empty);
+                    HttpContext.Session.SetString("Perfil", usuarioBD.NombreRol ?? string.Empty);
+
+
+                    if (usuarioBD.IdRol == 1 || usuarioBD.IdRol == 2)
+                    {
                         return RedirectToAction("Main");
                     }
                     else
@@ -298,6 +353,81 @@ namespace Proyecto_GestionGF.Controllers
         public IActionResult CerrarSesion()
         {
             HttpContext.Session.Clear();
+            return RedirectToAction("Index");
+        }
+
+        // Recuperar y restablecer password
+
+        [HttpGet]
+        public IActionResult RecuperarPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult RecuperarPassword(string correo)
+        {
+            using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+
+            var usuario = cn.QueryFirstOrDefault<Usuario>(
+                "SELECT * FROM Usuario WHERE CorreoElectronico = @correo",
+                new { correo });
+
+            if (usuario == null)
+            {
+                TempData["Error"] = "Correo no encontrado";
+                return View();
+            }
+
+            var token = Guid.NewGuid().ToString();
+
+            cn.Execute(@"INSERT INTO RecuperacionPassword 
+                (Correo, Token, FechaExpiracion)
+                VALUES (@correo, @token, DATEADD(MINUTE, 30, GETDATE()))",
+                new { correo, token });
+
+            var link = Url.Action("CambiarPassword", "Home", new { token }, Request.Scheme);
+
+            ViewBag.Link = link;
+
+            return View();
+        }
+        [HttpGet]
+        public IActionResult CambiarPassword(string token)
+        {
+            return View(model: token);
+        }
+        [HttpPost]
+        public IActionResult CambiarPassword(string token, string nuevaPassword)
+        {
+            using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+
+            var registro = cn.QueryFirstOrDefault<dynamic>(
+                @"SELECT * FROM RecuperacionPassword 
+          WHERE Token = @token 
+          AND Usado = 0 
+          AND FechaExpiracion > GETDATE()",
+                new { token });
+
+            if (registro == null)
+            {
+                TempData["Error"] = "Token inválido o expirado";
+                return View(model: token);
+            }
+
+            // 🔐 HASH (recomendado)
+            var hash = nuevaPassword;
+
+            cn.Execute(
+                "UPDATE Usuario SET Password = @pass WHERE CorreoElectronico = @correo",
+                new { pass = hash, correo = registro.Correo });
+
+            cn.Execute(
+                "UPDATE RecuperacionPassword SET Usado = 1 WHERE Token = @token",
+                new { token });
+
+            TempData["Ok"] = "Contraseña actualizada correctamente";
+
             return RedirectToAction("Index");
         }
     }
