@@ -17,6 +17,17 @@ namespace Proyecto_GestionGF.Controllers
             _configuration = configuration;
         }
 
+        private void CargarNotificaciones(SqlConnection cn)
+        {
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = idUsuario },
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
@@ -28,6 +39,7 @@ namespace Proyecto_GestionGF.Controllers
             ).ToList();
 
             ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador";
+            CargarNotificaciones(cn);
 
             return View(lista);
         }

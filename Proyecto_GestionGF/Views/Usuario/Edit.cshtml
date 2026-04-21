@@ -1,115 +1,80 @@
 ﻿@model Proyecto_GestionGF.Models.Usuario
+
 @{
-    ViewData["Title"] = "Editar usuario - Gestión GF";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Editar usuario";
+    ViewBag.Subtitulo = "Modifique la información del usuario.";
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"]</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-<body class="gf-dashboard-body">
+<section class="gf-form-card" style="max-width:900px; margin:0 auto;">
+    <form asp-action="Edit" asp-controller="Usuario" method="post">
+        @Html.AntiForgeryToken()
 
-    <header class="gf-header">
-        <div class="gf-header-top">
-            <div class="gf-logo-wrapper">
-                <img src="@Url.Content("~/img/logoGF.png")" alt="Logo Grupo Fiesler" class="gf-logo-img" />
-            </div>
-        </div>
-        <div class="gf-header-bar">
-            <span class="gf-header-bar-text">Calidad y servicio que marcan la diferencia</span>
-        </div>
-    </header>
+        <div asp-validation-summary="ModelOnly" class="gf-alert gf-alert-error"></div>
 
-    <div class="gf-main-layout">
-        <main class="gf-content" style="max-width:900px;margin:0 auto;">
-            <div class="gf-content-header">
-                <div>
-                    <h1 class="gf-page-title">Editar usuario</h1>
-                    <p class="gf-page-subtitle">Modifique la información del usuario.</p>
-                </div>
+        <input type="hidden" asp-for="IdUsuario" />
+
+        <div class="gf-form-grid-2">
+            <div class="gf-form-group">
+                <label asp-for="Identificacion" class="gf-label">Identificación</label>
+                <input asp-for="Identificacion" class="gf-input" />
+                <span asp-validation-for="Identificacion" class="text-danger"></span>
             </div>
 
-            <section class="gf-form-card">
-                <form asp-action="Edit" asp-controller="Usuario" method="post">
-                    @Html.AntiForgeryToken()
+            <div class="gf-form-group">
+                <label asp-for="Nombre" class="gf-label">Nombre completo</label>
+                <input asp-for="Nombre" class="gf-input" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
 
-                    <div asp-validation-summary="ModelOnly" class="gf-alert gf-alert-error"></div>
+            <div class="gf-form-group">
+                <label asp-for="NombreUsuario" class="gf-label">Nombre de usuario</label>
+                <input asp-for="NombreUsuario" class="gf-input" />
+                <span asp-validation-for="NombreUsuario" class="text-danger"></span>
+            </div>
 
-                    <input type="hidden" asp-for="IdUsuario" />
+            <div class="gf-form-group">
+                <label asp-for="CorreoElectronico" class="gf-label">Correo electrónico</label>
+                <input asp-for="CorreoElectronico" class="gf-input" />
+                <span asp-validation-for="CorreoElectronico" class="text-danger"></span>
+            </div>
 
-                    <div class="gf-form-grid-2">
-                        <div class="gf-form-group">
-                            <label asp-for="Identificacion" class="gf-label">Identificación</label>
-                            <input asp-for="Identificacion" class="gf-input" />
-                            <span asp-validation-for="Identificacion" class="text-danger"></span>
-                        </div>
+            <div class="gf-form-group">
+                <label asp-for="Password" class="gf-label">Contraseña</label>
+                <input asp-for="Password" type="text" class="gf-input" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
 
-                        <div class="gf-form-group">
-                            <label asp-for="Nombre" class="gf-label">Nombre completo</label>
-                            <input asp-for="Nombre" class="gf-input" />
-                            <span asp-validation-for="Nombre" class="text-danger"></span>
-                        </div>
+            <div class="gf-form-group">
+                <label asp-for="IdRol" class="gf-label">Rol</label>
+                <select asp-for="IdRol" asp-items="ViewBag.Roles" class="gf-input">
+                    <option value="">-- Seleccione un rol --</option>
+                </select>
+                <span asp-validation-for="IdRol" class="text-danger"></span>
+            </div>
 
-                        <div class="gf-form-group">
-                            <label asp-for="NombreUsuario" class="gf-label">Nombre de usuario</label>
-                            <input asp-for="NombreUsuario" class="gf-input" />
-                            <span asp-validation-for="NombreUsuario" class="text-danger"></span>
-                        </div>
+            <div class="gf-form-group">
+                <label asp-for="IdDepartamento" class="gf-label">Departamento</label>
+                <select asp-for="IdDepartamento" asp-items="ViewBag.Departamentos" class="gf-input">
+                    <option value="">-- Seleccione un departamento --</option>
+                </select>
+                <span asp-validation-for="IdDepartamento" class="text-danger"></span>
+            </div>
 
-                        <div class="gf-form-group">
-                            <label asp-for="CorreoElectronico" class="gf-label">Correo electrónico</label>
-                            <input asp-for="CorreoElectronico" class="gf-input" />
-                            <span asp-validation-for="CorreoElectronico" class="text-danger"></span>
-                        </div>
+            <div class="gf-form-group">
+                <label asp-for="Activo" class="gf-label">Activo</label>
+                <select asp-for="Activo" class="gf-input">
+                    <option value="true">Sí</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+        </div>
 
-                        <div class="gf-form-group">
-                            <label asp-for="Password" class="gf-label">Contraseña</label>
-                            <input asp-for="Password" type="text" class="gf-input" />
-                            <span asp-validation-for="Password" class="text-danger"></span>
-                        </div>
+        <div class="gf-form-actions">
+            <a asp-action="Index" class="gf-btn gf-btn-secondary">Cancelar</a>
+            <button type="submit" class="gf-btn gf-btn-primary">Actualizar</button>
+        </div>
+    </form>
+</section>
 
-                        <div class="gf-form-group">
-                            <label asp-for="IdRol" class="gf-label">Rol</label>
-                            <select asp-for="IdRol" asp-items="ViewBag.Roles" class="gf-input">
-                                <option value="">-- Seleccione un rol --</option>
-                            </select>
-                            <span asp-validation-for="IdRol" class="text-danger"></span>
-                        </div>
-
-                        <div class="gf-form-group">
-                            <label asp-for="IdDepartamento" class="gf-label">Departamento</label>
-                            <select asp-for="IdDepartamento" asp-items="ViewBag.Departamentos" class="gf-input">
-                                <option value="">-- Seleccione un departamento --</option>
-                            </select>
-                            <span asp-validation-for="IdDepartamento" class="text-danger"></span>
-                        </div>
-
-                        <div class="gf-form-group">
-                            <label asp-for="Activo" class="gf-label">Activo</label>
-                            <select asp-for="Activo" class="gf-input">
-                                <option value="true">Sí</option>
-                                <option value="false">No</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="gf-form-actions">
-                        <a asp-action="Index" class="gf-btn gf-btn-secondary">Cancelar</a>
-                        <button type="submit" class="gf-btn gf-btn-primary">Actualizar</button>
-                    </div>
-                </form>
-            </section>
-        </main>
-    </div>
-
-    <footer class="gf-footer">
-        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
-    </footer>
-
-    <partial name="_ValidationScriptsPartial" />
-</body>
-</html>
+<partial name="_ValidationScriptsPartial" />

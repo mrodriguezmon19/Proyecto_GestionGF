@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Proyecto_GestionGF.Models
 {
@@ -11,6 +10,8 @@ namespace Proyecto_GestionGF.Models
 
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un tipo de permiso.")]
         public int IdTipoPermiso { get; set; }
+
+        public string NombrePermiso { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La fecha de inicio es obligatoria.")]
         [DataType(DataType.Date)]
@@ -26,7 +27,7 @@ namespace Proyecto_GestionGF.Models
 
         public string ArchivoFile { get; set; } = string.Empty;
 
-        public string Estado { get; set; } = string.Empty;
+        public int Estado { get; set; }
 
         public string? MotivoRechazo { get; set; }
     }

@@ -1,7 +1,5 @@
 ﻿using System.Data;
 using Dapper;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
@@ -20,6 +18,17 @@ namespace Proyecto_GestionGF.Controllers
             _configuration = configuration;
         }
 
+        private void CargarNotificaciones(SqlConnection cn)
+        {
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = idUsuario },
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
@@ -31,6 +40,7 @@ namespace Proyecto_GestionGF.Controllers
             ).ToList();
 
             ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador";
+            CargarNotificaciones(cn);
 
             return View(lista);
         }
@@ -94,22 +104,6 @@ namespace Proyecto_GestionGF.Controllers
                 : "No se pudo registrar el usuario.";
 
             return RedirectToAction("Index");
-        }
-
-        private void CargarCombos(SqlConnection cn)
-        {
-            var roles = cn.Query<Rol>(
-                "Rol_Listar",
-                commandType: CommandType.StoredProcedure
-            ).ToList();
-
-            var departamentos = cn.Query<Departamento>(
-                "Departamento_Listar",
-                commandType: CommandType.StoredProcedure
-            ).ToList();
-
-            ViewBag.Roles = new SelectList(roles, "IdRol", "NombreRol");
-            ViewBag.Departamentos = new SelectList(departamentos, "IdDepartamento", "NombreDepartamento");
         }
 
         [HttpGet]
@@ -227,6 +221,22 @@ namespace Proyecto_GestionGF.Controllers
                 : "No se pudo cambiar el estado del usuario.";
 
             return RedirectToAction("Index");
+        }
+
+        private void CargarCombos(SqlConnection cn)
+        {
+            var roles = cn.Query<Rol>(
+                "Rol_Listar",
+                commandType: CommandType.StoredProcedure
+            ).ToList();
+
+            var departamentos = cn.Query<Departamento>(
+                "Departamento_Listar",
+                commandType: CommandType.StoredProcedure
+            ).ToList();
+
+            ViewBag.Roles = new SelectList(roles, "IdRol", "NombreRol");
+            ViewBag.Departamentos = new SelectList(departamentos, "IdDepartamento", "NombreDepartamento");
         }
     }
 }

@@ -3,9 +3,11 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Proyecto_GestionGF.Models;
+using Proyecto_GestionGF.Filters;
 
 namespace Proyecto_GestionGF.Controllers
 {
+    [OnlyAdminFilter]
     public class TipoPermisoController : Controller
     {
         private readonly IConfiguration _configuration;
@@ -15,13 +17,20 @@ namespace Proyecto_GestionGF.Controllers
             _configuration = configuration;
         }
 
+        private void CargarNotificaciones(SqlConnection cn)
+        {
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = idUsuario },
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
-            var rol = HttpContext.Session.GetInt32("IdRol");
-            if (rol != 1 && rol != 2)
-                return RedirectToAction("MainUsuario", "Home");
-
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
             var lista = cn.Query<TipoPermiso>(
@@ -30,6 +39,7 @@ namespace Proyecto_GestionGF.Controllers
             ).ToList();
 
             ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador";
+            CargarNotificaciones(cn);
 
             return View(lista);
         }
@@ -37,10 +47,6 @@ namespace Proyecto_GestionGF.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            var rol = HttpContext.Session.GetInt32("IdRol");
-            if (rol != 1 && rol != 2)
-                return RedirectToAction("MainUsuario", "Home");
-
             return View(new TipoPermiso());
         }
 
@@ -48,10 +54,6 @@ namespace Proyecto_GestionGF.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(TipoPermiso model)
         {
-            var rol = HttpContext.Session.GetInt32("IdRol");
-            if (rol != 1 && rol != 2)
-                return RedirectToAction("MainUsuario", "Home");
-
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -77,10 +79,6 @@ namespace Proyecto_GestionGF.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var rol = HttpContext.Session.GetInt32("IdRol");
-            if (rol != 1 && rol != 2)
-                return RedirectToAction("MainUsuario", "Home");
-
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
             var model = cn.QueryFirstOrDefault<TipoPermiso>(
@@ -102,10 +100,6 @@ namespace Proyecto_GestionGF.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(TipoPermiso model)
         {
-            var rol = HttpContext.Session.GetInt32("IdRol");
-            if (rol != 1 && rol != 2)
-                return RedirectToAction("MainUsuario", "Home");
-
             if (!ModelState.IsValid)
                 return View(model);
 

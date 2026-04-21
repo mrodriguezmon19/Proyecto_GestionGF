@@ -1,67 +1,34 @@
 ﻿@model Proyecto_GestionGF.Models.TipoPermiso
+
 @{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
     ViewData["Title"] = "Nuevo tipo de permiso";
+    ViewBag.Subtitulo = "Registre un nuevo tipo de permiso en el sistema.";
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"]</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-<body class="gf-dashboard-body">
+<section class="gf-form-card" style="max-width:900px; margin:0 auto;">
+    <form asp-action="Create" asp-controller="TipoPermiso" method="post">
+        @Html.AntiForgeryToken()
 
-    <header class="gf-header">
-        <div class="gf-header-top">
-            <div class="gf-logo-wrapper">
-                <img src="@Url.Content("~/img/logoGF.png")" alt="Logo Grupo Fiesler" class="gf-logo-img" />
-            </div>
+        <div asp-validation-summary="ModelOnly" class="gf-alert gf-alert-error"></div>
+
+        <div class="gf-form-group">
+            <label class="gf-label" asp-for="NombrePermiso">Nombre del permiso</label>
+            <input asp-for="NombrePermiso" class="gf-input" />
+            <span asp-validation-for="NombrePermiso" class="text-danger"></span>
         </div>
-        <div class="gf-header-bar">
-            <span class="gf-header-bar-text">Calidad y servicio que marcan la diferencia</span>
+
+        <div class="gf-form-group">
+            <label class="gf-label" asp-for="Descripcion">Descripción</label>
+            <textarea asp-for="Descripcion" class="gf-textarea" rows="4"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
         </div>
-    </header>
 
-    <div class="gf-main-layout">
-        <main class="gf-content" style="max-width:900px;margin:0 auto;">
-            <div class="gf-content-header">
-                <div>
-                    <h1 class="gf-page-title">Nuevo tipo de permiso</h1>
-                    <p class="gf-page-subtitle">Registre un nuevo tipo de permiso.</p>
-                </div>
-            </div>
+        <div class="gf-form-actions">
+            <a asp-action="Index" class="gf-btn gf-btn-secondary">Cancelar</a>
+            <button type="submit" class="gf-btn gf-btn-primary">Guardar</button>
+        </div>
+    </form>
+</section>
 
-            <section class="gf-form-card">
-                <form asp-action="Create" asp-controller="TipoPermiso" method="post">
-                    @Html.AntiForgeryToken()
-
-                    <div class="gf-form-group">
-                        <label class="gf-label" asp-for="NombrePermiso">Nombre del permiso</label>
-                        <input asp-for="NombrePermiso" class="gf-input" />
-                        <span asp-validation-for="NombrePermiso" class="text-danger"></span>
-                    </div>
-
-                    <div class="gf-form-group">
-                        <label class="gf-label" asp-for="Descripcion">Descripción</label>
-                        <textarea asp-for="Descripcion" class="gf-textarea" rows="4"></textarea>
-                        <span asp-validation-for="Descripcion" class="text-danger"></span>
-                    </div>
-
-                    <div class="gf-form-actions">
-                        <a asp-action="Index" class="gf-btn gf-btn-secondary">Cancelar</a>
-                        <button type="submit" class="gf-btn gf-btn-primary">Guardar</button>
-                    </div>
-                </form>
-            </section>
-        </main>
-    </div>
-
-    <footer class="gf-footer">
-        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
-    </footer>
-
-    <partial name="_ValidationScriptsPartial" />
-</body>
-</html>
+<partial name="_ValidationScriptsPartial" />

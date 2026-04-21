@@ -11,31 +11,50 @@ using iText.Kernel.Font;
 using iText.IO.Font.Constants;
 using Proyecto_GestionGF.Filters;
 
-
-
-
 namespace Proyecto_GestionGF.Controllers
 {
     public class HomeController : Controller
     {
-
         private readonly IConfiguration _configuration;
         private readonly IHostEnvironment _environment;
+
         public HomeController(IConfiguration configuration, IHostEnvironment environment)
         {
             _configuration = configuration;
             _environment = environment;
         }
 
+        private void CargarHeaderAdmin(SqlConnection cn)
+        {
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
 
+            ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador";
 
-        // Se realiza el inicio de sesión y la validación de credenciales y rol
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = idUsuario },
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
+        private void CargarHeaderUsuario(SqlConnection cn)
+        {
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+
+            ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Usuario";
+
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = idUsuario },
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
-
 
         [HttpPost]
         public IActionResult Index(Usuario usuario)
@@ -44,7 +63,6 @@ namespace Proyecto_GestionGF.Controllers
             {
                 using (var context = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]))
                 {
-
                     var usuarioBD = context.QueryFirstOrDefault<Usuario>(
                         "SELECT * FROM Usuario WHERE CorreoElectronico = @correo",
                         new { correo = usuario.CorreoElectronico });
@@ -55,26 +73,27 @@ namespace Proyecto_GestionGF.Controllers
                         return View();
                     }
 
-
                     if (usuarioBD.Bloqueado && usuarioBD.FechaBloqueo != null)
                     {
                         if (DateTime.Now >= usuarioBD.FechaBloqueo.Value.AddMinutes(5))
                         {
                             context.Execute(
                                 @"UPDATE Usuario 
-                          SET Bloqueado = 0, IntentosFallidos = 0, FechaBloqueo = NULL 
-                          WHERE IdUsuario = @id",
+                                  SET Bloqueado = 0, IntentosFallidos = 0, FechaBloqueo = NULL 
+                                  WHERE IdUsuario = @id",
                                 new { id = usuarioBD.IdUsuario });
 
                             usuarioBD.Bloqueado = false;
                             usuarioBD.IntentosFallidos = 0;
                         }
                     }
+
                     if (usuarioBD.Bloqueado)
                     {
                         TempData["Error"] = "Cuenta bloqueada. Intente nuevamente en 5 minutos.";
                         return View();
                     }
+
                     if (usuarioBD.Password != usuario.Password)
                     {
                         int intentos = usuarioBD.IntentosFallidos + 1;
@@ -82,13 +101,13 @@ namespace Proyecto_GestionGF.Controllers
 
                         context.Execute(
                             @"UPDATE Usuario 
-                      SET IntentosFallidos = @intentos,
-                          Bloqueado = @bloqueado,
-                          FechaBloqueo = CASE 
-                              WHEN @bloqueado = 1 THEN GETDATE() 
-                              ELSE FechaBloqueo 
-                          END
-                      WHERE IdUsuario = @id",
+                              SET IntentosFallidos = @intentos,
+                                  Bloqueado = @bloqueado,
+                                  FechaBloqueo = CASE 
+                                      WHEN @bloqueado = 1 THEN GETDATE() 
+                                      ELSE FechaBloqueo 
+                                  END
+                              WHERE IdUsuario = @id",
                             new
                             {
                                 intentos,
@@ -108,20 +127,17 @@ namespace Proyecto_GestionGF.Controllers
                         return View();
                     }
 
-
                     context.Execute(
                         @"UPDATE Usuario 
-                  SET IntentosFallidos = 0, Bloqueado = 0, FechaBloqueo = NULL 
-                  WHERE IdUsuario = @id",
+                          SET IntentosFallidos = 0, Bloqueado = 0, FechaBloqueo = NULL 
+                          WHERE IdUsuario = @id",
                         new { id = usuarioBD.IdUsuario });
-
 
                     HttpContext.Session.SetInt32("IdUsuario", usuarioBD.IdUsuario);
                     HttpContext.Session.SetString("Nombre", usuarioBD.Nombre ?? string.Empty);
                     HttpContext.Session.SetInt32("IdRol", usuarioBD.IdRol);
                     HttpContext.Session.SetString("Correo", usuarioBD.CorreoElectronico ?? string.Empty);
                     HttpContext.Session.SetString("Perfil", usuarioBD.NombreRol ?? string.Empty);
-
 
                     if (usuarioBD.IdRol == 1 || usuarioBD.IdRol == 2)
                     {
@@ -140,15 +156,9 @@ namespace Proyecto_GestionGF.Controllers
             }
         }
 
-
-        // Main Administrador
         [OnlyAdminFilter]
         public IActionResult Main(DateTime? desde, DateTime? hasta, int? estado)
         {
-            var rol = HttpContext.Session.GetInt32("IdRol");
-            if (rol != 1 && rol != 2)
-                return RedirectToAction("MainUsuario");
-
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
             var vm = new AdminDashboardModel
@@ -156,19 +166,16 @@ namespace Proyecto_GestionGF.Controllers
                 Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador",
             };
 
-
             vm.Solicitudes = cn.Query<AdminSolicitudRow>(
-                    "SolicitudHistorialAdmin_Filtro",
-                    new
-                    {
-                        Desde = desde,
-                        Hasta = hasta,
-                        Estado = estado,
-                    },
-                    commandType: CommandType.StoredProcedure
-                )
-                .ToList();
-
+                "SolicitudHistorialAdmin_Filtro",
+                new
+                {
+                    Desde = desde,
+                    Hasta = hasta,
+                    Estado = estado,
+                },
+                commandType: CommandType.StoredProcedure
+            ).ToList();
 
             vm.TotalPendientes = cn.ExecuteScalar<int>(
                 "SELECT COUNT(*) FROM Solicitud WHERE Estado = 0"
@@ -181,17 +188,20 @@ namespace Proyecto_GestionGF.Controllers
             vm.TotalRechazados = cn.ExecuteScalar<int>(
                 "SELECT COUNT(*) FROM Solicitud WHERE Estado = 2"
             );
+
             vm.TotalProximos = cn.ExecuteScalar<int>(
                 @"SELECT COUNT(*) 
-                FROM Solicitud 
-                WHERE FechaInicio BETWEEN CAST(GETDATE() AS DATE) 
-                AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))"
+                  FROM Solicitud 
+                  WHERE FechaInicio BETWEEN CAST(GETDATE() AS DATE) 
+                  AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))"
             );
+
+            // Para el layout
+            CargarHeaderAdmin(cn);
 
             return View(vm);
         }
 
-        // Main Usuario
         [OnlyUserFilter]
         [HttpGet]
         public IActionResult MainUsuario()
@@ -208,13 +218,10 @@ namespace Proyecto_GestionGF.Controllers
             };
 
             vm.UltimasSolicitudes = cn.Query<UsuarioSolicitudRow>(
-                    "Usuario_SolicitudesRecientes",
-                    new { IdUsuario = idUsuario, Top = 10 },
-                    commandType: CommandType.StoredProcedure
-                )
-                .ToList();
-
-
+                "Usuario_SolicitudesRecientes",
+                new { IdUsuario = idUsuario, Top = 10 },
+                commandType: CommandType.StoredProcedure
+            ).ToList();
 
             vm.TotalPendientes = cn.ExecuteScalar<int>(
                 "SELECT COUNT(*) FROM Solicitud WHERE Estado = 0 AND IdUsuario = @IdUsuario",
@@ -230,16 +237,20 @@ namespace Proyecto_GestionGF.Controllers
                 "SELECT COUNT(*) FROM Solicitud WHERE Estado = 2 AND IdUsuario = @IdUsuario",
                 new { IdUsuario = idUsuario }
             );
+
             vm.TotalProximos = cn.ExecuteScalar<int>(
                 @"SELECT COUNT(*) 
-                FROM Solicitud 
-                WHERE IdUsuario = @IdUsuario
-                AND FechaInicio BETWEEN CAST(GETDATE() AS DATE) 
-                AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))",
+                  FROM Solicitud 
+                  WHERE IdUsuario = @IdUsuario
+                  AND FechaInicio BETWEEN CAST(GETDATE() AS DATE) 
+                  AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))",
                 new { IdUsuario = idUsuario }
             );
 
-            return View(vm); // Views/Home/MainUsuario.cshtml
+            // Para el layout
+            CargarHeaderUsuario(cn);
+
+            return View(vm);
         }
 
         [HttpGet]
@@ -289,8 +300,6 @@ namespace Proyecto_GestionGF.Controllers
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "ReporteSolicitudes.xlsx");
         }
-
-        // ================= EXPORTAR PDF =================
 
         [HttpGet]
         public IActionResult ExportarPdf(DateTime? desde, DateTime? hasta, int? estado)
@@ -348,15 +357,12 @@ namespace Proyecto_GestionGF.Controllers
             return File(stream.ToArray(), "application/pdf", "ReporteSolicitudes.pdf");
         }
 
-
         [HttpGet]
         public IActionResult CerrarSesion()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Index");
         }
-
-        // Recuperar y restablecer password
 
         [HttpGet]
         public IActionResult RecuperarPassword()
@@ -392,11 +398,13 @@ namespace Proyecto_GestionGF.Controllers
 
             return View();
         }
+
         [HttpGet]
         public IActionResult CambiarPassword(string token)
         {
             return View(model: token);
         }
+
         [HttpPost]
         public IActionResult CambiarPassword(string token, string nuevaPassword)
         {
@@ -404,9 +412,9 @@ namespace Proyecto_GestionGF.Controllers
 
             var registro = cn.QueryFirstOrDefault<dynamic>(
                 @"SELECT * FROM RecuperacionPassword 
-          WHERE Token = @token 
-          AND Usado = 0 
-          AND FechaExpiracion > GETDATE()",
+                  WHERE Token = @token 
+                  AND Usado = 0 
+                  AND FechaExpiracion > GETDATE()",
                 new { token });
 
             if (registro == null)
@@ -415,7 +423,6 @@ namespace Proyecto_GestionGF.Controllers
                 return View(model: token);
             }
 
-            // 🔐 HASH (recomendado)
             var hash = nuevaPassword;
 
             cn.Execute(

@@ -52,6 +52,7 @@ namespace Proyecto_GestionGF.Controllers
         {
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
             CargarTiposPermiso(cn);
+            CargarHeaderUsuario(cn);
 
             return View(new Solicitud
             {
@@ -105,6 +106,7 @@ namespace Proyecto_GestionGF.Controllers
             if (!ModelState.IsValid)
             {
                 CargarTiposPermiso(con);
+                CargarHeaderUsuario(con);
                 return View(solicitud);
             }
 
@@ -127,6 +129,7 @@ namespace Proyecto_GestionGF.Controllers
             {
                 TempData["Error"] = "No se pudo registrar la solicitud.";
                 CargarTiposPermiso(con);
+                CargarHeaderUsuario(con);
                 return View(solicitud);
             }
 
@@ -189,6 +192,8 @@ namespace Proyecto_GestionGF.Controllers
             ).ToList();
 
             ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Administrador";
+            CargarNotificacionesNoLeidas(cn);
+
             return View(lista);
         }
 
@@ -274,20 +279,59 @@ namespace Proyecto_GestionGF.Controllers
         }
 
         //Se muestra el historial de solicitudes por usuario
+        [OnlyUserFilter]
         [HttpGet]
         public IActionResult MisSolicitudes()
         {
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
-            var idUsuario = HttpContext.Session.GetInt32("IdUsuario");
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+            if (idUsuario <= 0)
+                return RedirectToAction("Index", "Home");
 
             var solicitudes = cn.Query<Solicitud>(
-                    "SELECT * FROM Solicitud WHERE IdUsuario = @IdUsuario",
-                    new { IdUsuario = idUsuario }
-                )
-                .ToList();
+                @"SELECT
+            S.IdSolicitud,
+            S.IdUsuario,
+            S.IdTipoPermiso,
+            TP.NombrePermiso AS NombrePermiso,
+            S.FechaInicio,
+            S.FechaFinal,
+            S.Motivo,
+            S.ArchivoFile,
+            S.Estado,
+            S.MotivoRechazo
+          FROM Solicitud S
+          INNER JOIN TipoPermiso TP ON S.IdTipoPermiso = TP.IdTipoPermiso
+          WHERE S.IdUsuario = @IdUsuario
+          ORDER BY S.IdSolicitud DESC",
+                new { IdUsuario = idUsuario }
+            ).ToList();
+
+            CargarHeaderUsuario(cn);
 
             return View(solicitudes);
+        }
+
+        private void CargarNotificacionesNoLeidas(SqlConnection cn)
+        {
+            var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
+
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = idUsuario },
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
+        private void CargarHeaderUsuario(SqlConnection cn)
+        {
+            ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Usuario";
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0 },
+                commandType: CommandType.StoredProcedure
+            );
         }
 
 

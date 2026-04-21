@@ -1,116 +1,90 @@
 @model IEnumerable<Proyecto_GestionGF.Models.Solicitud>
 
 @{
-    ViewData["Title"] = "Historial de solicitudes - Gestión GF";
+    Layout = "~/Views/Shared/_LayoutUsuario.cshtml";
+    ViewData["Title"] = "Mis solicitudes";
+    ViewBag.Subtitulo = "Consulta el estado de tus permisos.";
+    ViewBag.Menu = "MisSolicitudes";
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"]</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-<body class="gf-dashboard-body">
+<section class="gf-form-card">
 
-    <header class="gf-header">
-        <div class="gf-header-top">
-            <div class="gf-logo-wrapper">
-                <img src="@Url.Content("~/img/logoGF.png")" alt="Logo Grupo Fiesler" width="100" class="gf-logo-img" />
-            </div>
+    @if (Model == null || !Model.Any())
+    {
+        <div class="gf-alert gf-alert-info">
+            No tienes solicitudes registradas.
         </div>
-        <div class="gf-header-bar">
-            <span class="gf-header-bar-text">Calidad y servicio que marcan la diferencia</span>
-        </div>
-    </header>
+    }
+    else
+    {
+        <div class="gf-table-wrapper">
+            <table class="gf-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Fecha inicio</th>
+                        <th>Fecha fin</th>
+                        <th>Estado</th>
+                        <th>Motivo</th>
+                        <th>Adjunto</th>
+                        <th>Motivo rechazo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.NombrePermiso</td>
+                            <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                            <td>@item.FechaFinal.ToString("dd/MM/yyyy")</td>
 
-    <div class="gf-main-layout">
-
-      
-        <aside class="gf-sidebar">
-            <div class="gf-sidebar-title">Gestión GF</div>
-            <nav class="gf-nav">
-                <ul class="gf-nav-list">
-                    <li><a class="gf-nav-link" asp-controller="Home" asp-action="MainUsuario">Mi panel</a></li>
-                    <li><a class="gf-nav-link" asp-controller="Solicitud" asp-action="CrearSolicitud">Nueva solicitud</a></li>
-                    <li><a class="gf-nav-link gf-nav-link-active" asp-controller="Solicitud" asp-action="MisSolicitudes">Mis Solicitudes</a></li>
-                    <li><a class="gf-nav-link" asp-controller="Home" asp-action="Index">Cerrar sesión</a></li>
-                </ul>
-            </nav>
-        </aside>
-
-    
-        <main class="gf-content">
-
-            <div class="gf-content-header">
-                <div>
-                    <h1 class="gf-page-title">Historial de solicitudes</h1>
-                    <p class="gf-page-subtitle">Consulta el estado de tus permisos.</p>
-                </div>
-                <div class="gf-user-info">
-                    <a class="gf-link gf-link-logout" asp-controller="Home" asp-action="Index">Cerrar sesión</a>
-                </div>
-            </div>
-
-            <section class="gf-form-card">
-
-                @if (!Model.Any())
-                {
-                    <div class="gf-alert gf-alert-info">
-                        No tienes solicitudes registradas.
-                    </div>
-                }
-                else
-                {
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Tipo</th>
-                                    <th>Fecha inicio</th>
-                                    <th>Fecha fin</th>
-                                    <th>Estado</th>
-                                    <th>Motivo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model)
+                            <td>
+                                @if (item.Estado == 0)
                                 {
-                                    <tr>
-                                        <td>@item.IdTipoPermiso</td>
-                                        <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
-                                        <td>@item.FechaFinal.ToString("dd/MM/yyyy")</td>
-                                        <td>
-                                            @if (item.Estado == "Aprobado")
-                                            {
-                                                <span class="gf-badge gf-badge-success">Aprobado</span>
-                                            }
-                                            else if (item.Estado == "Rechazado")
-                                            {
-                                                <span class="gf-badge gf-badge-danger">Rechazado</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="gf-badge gf-badge-warning">Pendiente</span>
-                                            }
-                                        </td>
-                                        <td>@item.Motivo</td>
-                                    </tr>
+                                    <span class="gf-badge gf-badge-pending">Pendiente</span>
                                 }
-                            </tbody>
-                        </table>
-                    </div>
-                }
+                                else if (item.Estado == 1)
+                                {
+                                    <span class="gf-badge gf-badge-approved">Aprobado</span>
+                                }
+                                else if (item.Estado == 2)
+                                {
+                                    <span class="gf-badge gf-badge-rejected">Rechazado</span>
+                                }
+                                else
+                                {
+                                    <span class="gf-badge">Cancelado</span>
+                                }
+                            </td>
 
-            </section>
+                            <td>@item.Motivo</td>
 
-        </main>
-    </div>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.ArchivoFile))
+                                {
+                                    <a href="@item.ArchivoFile" target="_blank" class="gf-table-link">Ver</a>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
 
-    <footer class="gf-footer">
-        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
-    </footer>
+                            <td>
+                                @if (item.Estado == 2 && !string.IsNullOrWhiteSpace(item.MotivoRechazo))
+                                {
+                                    <span class="gf-table-link" title="@item.MotivoRechazo">Ver motivo</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 
-</body>
-</html>
+</section>
