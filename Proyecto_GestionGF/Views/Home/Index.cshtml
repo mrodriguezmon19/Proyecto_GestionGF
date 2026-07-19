@@ -28,6 +28,11 @@
         </div>
     </header>
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
+    }
+
     <!-- CONTENEDOR PRINCIPAL DE LOGIN -->
     <main class="gf-login-wrapper">
         <section class="gf-login-card">
