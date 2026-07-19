@@ -1,0 +1,60 @@
+﻿@model List<Proyecto_GestionGF.Models.TipoPermiso>
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Tipos de permiso";
+    ViewBag.Subtitulo = "Gestione los tipos de permiso del sistema.";
+}
+
+<section class="gf-table-section">
+    <div class="gf-table-header-row">
+        <h2 class="gf-section-title">Listado de tipos de permiso</h2>
+        <div class="gf-table-actions">
+            <a asp-controller="TipoPermiso"
+               asp-action="Create"
+               class="gf-btn gf-btn-primary">
+                Nuevo tipo
+            </a>
+        </div>
+    </div>
+
+    <div class="gf-table-wrapper">
+        <table class="gf-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="4">No hay tipos de permiso registrados.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.IdTipoPermiso</td>
+                            <td>@item.NombrePermiso</td>
+                            <td>@item.Descripcion</td>
+                            <td>
+                                <a asp-controller="TipoPermiso"
+                                   asp-action="Edit"
+                                   asp-route-id="@item.IdTipoPermiso"
+                                   class="gf-table-link">
+                                    Editar
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

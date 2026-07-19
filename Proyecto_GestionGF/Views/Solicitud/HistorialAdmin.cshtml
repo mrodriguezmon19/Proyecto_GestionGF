@@ -1,0 +1,91 @@
+﻿@model List<Proyecto_GestionGF.Models.SolicitudHistorialModel>
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Historial de solicitudes";
+    ViewBag.Subtitulo = "Resumen de solicitudes de permisos del personal.";
+    ViewBag.Menu = "Historial";
+}
+
+<section class="gf-table-section">
+    <div class="gf-table-wrapper">
+        <table class="gf-table">
+            <thead>
+                <tr>
+                    <th>Nº</th>
+                    <th>Colaborador</th>
+                    <th>Tipo</th>
+                    <th>Motivo</th>
+                    <th>Fecha inicio</th>
+                    <th>Fecha fin</th>
+                    <th>Estado</th>
+                    <th>Adjunto</th>
+                    <th>Motivo rechazo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9">No hay solicitudes registradas.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>@s.IdSolicitud</td>
+                            <td>@s.NombreUsuario</td>
+                            <td>@s.NombrePermiso</td>
+                            <td>@s.Motivo</td>
+                            <td>@s.FechaInicio.ToString("dd-MM-yyyy")</td>
+                            <td>@s.FechaFinal.ToString("dd-MM-yyyy")</td>
+
+                            <td>
+                                @if (s.Estado == 0)
+                                {
+                                    <span class="gf-badge gf-badge-pending">Pendiente</span>
+                                }
+                                else if (s.Estado == 1)
+                                {
+                                    <span class="gf-badge gf-badge-approved">Aprobado</span>
+                                }
+                                else if (s.Estado == 2)
+                                {
+                                    <span class="gf-badge gf-badge-rejected">Rechazado</span>
+                                }
+                                else
+                                {
+                                    <span class="gf-badge">Cancelado</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(s.ArchivoFile))
+                                {
+                                    <a class="gf-table-link" href="@s.ArchivoFile" target="_blank">Ver</a>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (s.Estado == 2 && !string.IsNullOrWhiteSpace(s.MotivoRechazo))
+                                {
+                                    <span class="gf-table-link" title="@s.MotivoRechazo">Ver motivo</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

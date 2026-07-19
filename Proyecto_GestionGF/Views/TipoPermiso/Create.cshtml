@@ -1,0 +1,34 @@
+﻿@model Proyecto_GestionGF.Models.TipoPermiso
+
+@{
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Nuevo tipo de permiso";
+    ViewBag.Subtitulo = "Registre un nuevo tipo de permiso en el sistema.";
+}
+
+<section class="gf-form-card" style="max-width:900px; margin:0 auto;">
+    <form asp-action="Create" asp-controller="TipoPermiso" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="gf-alert gf-alert-error"></div>
+
+        <div class="gf-form-group">
+            <label class="gf-label" asp-for="NombrePermiso">Nombre del permiso</label>
+            <input asp-for="NombrePermiso" class="gf-input" />
+            <span asp-validation-for="NombrePermiso" class="text-danger"></span>
+        </div>
+
+        <div class="gf-form-group">
+            <label class="gf-label" asp-for="Descripcion">Descripción</label>
+            <textarea asp-for="Descripcion" class="gf-textarea" rows="4"></textarea>
+            <span asp-validation-for="Descripcion" class="text-danger"></span>
+        </div>
+
+        <div class="gf-form-actions">
+            <a asp-action="Index" class="gf-btn gf-btn-secondary">Cancelar</a>
+            <button type="submit" class="gf-btn gf-btn-primary">Guardar</button>
+        </div>
+    </form>
+</section>
+
+<partial name="_ValidationScriptsPartial" />

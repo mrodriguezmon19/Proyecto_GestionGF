@@ -7,6 +7,8 @@
         public string NombrePermiso { get; set; } = string.Empty;
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFinal { get; set; }
+
+        public string? Motivo { get; set; } = string.Empty;
         public string? MotivoRechazo { get; set; } = string.Empty;
 
         public byte Estado { get; set; } // 0=Pendiente,1=Aprobado,2=Rechazado

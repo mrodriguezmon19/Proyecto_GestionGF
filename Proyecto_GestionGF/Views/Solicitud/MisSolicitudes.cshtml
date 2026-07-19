@@ -1,0 +1,90 @@
+@model IEnumerable<Proyecto_GestionGF.Models.Solicitud>
+
+@{
+    Layout = "~/Views/Shared/_LayoutUsuario.cshtml";
+    ViewData["Title"] = "Mis solicitudes";
+    ViewBag.Subtitulo = "Consulta el estado de tus permisos.";
+    ViewBag.Menu = "MisSolicitudes";
+}
+
+<section class="gf-form-card">
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="gf-alert gf-alert-info">
+            No tienes solicitudes registradas.
+        </div>
+    }
+    else
+    {
+        <div class="gf-table-wrapper">
+            <table class="gf-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Fecha inicio</th>
+                        <th>Fecha fin</th>
+                        <th>Estado</th>
+                        <th>Motivo</th>
+                        <th>Adjunto</th>
+                        <th>Motivo rechazo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.NombrePermiso</td>
+                            <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                            <td>@item.FechaFinal.ToString("dd/MM/yyyy")</td>
+
+                            <td>
+                                @if (item.Estado == 0)
+                                {
+                                    <span class="gf-badge gf-badge-pending">Pendiente</span>
+                                }
+                                else if (item.Estado == 1)
+                                {
+                                    <span class="gf-badge gf-badge-approved">Aprobado</span>
+                                }
+                                else if (item.Estado == 2)
+                                {
+                                    <span class="gf-badge gf-badge-rejected">Rechazado</span>
+                                }
+                                else
+                                {
+                                    <span class="gf-badge">Cancelado</span>
+                                }
+                            </td>
+
+                            <td>@item.Motivo</td>
+
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(item.ArchivoFile))
+                                {
+                                    <a href="@item.ArchivoFile" target="_blank" class="gf-table-link">Ver</a>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (item.Estado == 2 && !string.IsNullOrWhiteSpace(item.MotivoRechazo))
+                                {
+                                    <span class="gf-table-link" title="@item.MotivoRechazo">Ver motivo</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+</section>

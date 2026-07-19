@@ -1,0 +1,114 @@
+﻿@model List<Proyecto_GestionGF.Models.Usuario>
+
+@{
+    Layout = "_LayoutAdmin";
+    ViewData["Title"] = "Usuarios";
+    ViewBag.Subtitulo = "Gestione los usuarios registrados del sistema.";
+    var nombre = ViewBag.Nombre as string ?? "Administrador";
+}
+
+<section class="gf-table-section">
+
+    <div class="gf-table-header-row">
+        <h2 class="gf-section-title">Listado de usuarios</h2>
+
+        <div class="gf-table-actions">
+            <a asp-controller="Usuario"
+               asp-action="Create"
+               class="gf-btn gf-btn-primary">
+                Nuevo usuario
+            </a>
+        </div>
+    </div>
+
+    <div class="gf-table-wrapper">
+        <table class="gf-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Identificación</th>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Correo</th>
+                    <th>Rol</th>
+                    <th>Departamento</th>
+                    <th>Activo</th>
+                    <th>Bloqueado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model == null || Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="10">No hay usuarios registrados.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.IdUsuario</td>
+                            <td>@item.Identificacion</td>
+                            <td>@item.Nombre</td>
+                            <td>@item.NombreUsuario</td>
+                            <td>@item.CorreoElectronico</td>
+                            <td>@item.NombreRol</td>
+                            <td>@item.NombreDepartamento</td>
+                            <td>@(item.Activo ? "Sí" : "No")</td>
+                            <td>@(item.Bloqueado ? "Sí" : "No")</td>
+
+                            <td>
+                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+
+                                    <!-- EDITAR -->
+                                    <a asp-controller="Usuario"
+                                       asp-action="Edit"
+                                       asp-route-id="@item.IdUsuario"
+                                       class="gf-table-link">
+                                        Editar
+                                    </a>
+
+                                    <!-- DESBLOQUEAR -->
+                                    @if (item.Bloqueado)
+                                    {
+                                        <form asp-controller="Usuario"
+                                              asp-action="Desbloquear"
+                                              method="post"
+                                              style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="idUsuario" value="@item.IdUsuario" />
+                                            <button type="submit" class="gf-btn gf-btn-secondary">
+                                                Desbloquear
+                                            </button>
+                                        </form>
+                                    }
+
+                                    <!-- ACTIVAR / INACTIVAR -->
+                                    <form asp-controller="Usuario"
+                                          asp-action="CambiarEstado"
+                                          method="post"
+                                          style="display:inline;">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idUsuario" value="@item.IdUsuario" />
+                                        <input type="hidden" name="activo" value="@(!item.Activo)" />
+
+                                        <button type="submit" class="gf-btn gf-btn-outline">
+                                            @(item.Activo ? "Inactivar" : "Activar")
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+</section>

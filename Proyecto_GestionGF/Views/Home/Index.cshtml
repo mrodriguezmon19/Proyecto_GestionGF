@@ -28,6 +28,11 @@
         </div>
     </header>
 
+    @if (TempData["Error"] != null)
+    {
+        <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
+    }
+
     <!-- CONTENEDOR PRINCIPAL DE LOGIN -->
     <main class="gf-login-wrapper">
         <section class="gf-login-card">
@@ -61,8 +66,9 @@
                 </button>
 
                 <div class="gf-login-links">
-                    <a href="#" class="gf-link">¿Olvidó su contraseña?</a>
-                    @* <a href="#" class="gf-link">Solicitar acceso</a> *@
+                    <a asp-controller="Home" asp-action="RecuperarPassword" class="gf-link">
+                        ¿Olvidó su contraseña?
+                    </a>
                 </div>
             </form>
         </section>

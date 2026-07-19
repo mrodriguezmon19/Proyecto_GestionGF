@@ -1,290 +1,200 @@
 ﻿@model Proyecto_GestionGF.Models.AdminDashboardModel
+
 @{
-    ViewData["Title"] = "Dashboard - Gestión GF";
-    var nombre = Model?.Nombre ?? "Usuario";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    ViewData["Title"] = "Dashboard administrador";
+    ViewBag.Subtitulo = "Resumen de solicitudes de permisos del personal.";
+    ViewBag.Menu = "Dashboard";
 }
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="utf-8" />
-    <title>@ViewData["Title"]</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="~/css/site.css" />
-</head>
-<body class="gf-dashboard-body">
+<section class="gf-kpi-grid">
 
-    <!-- HEADER -->
-    <header class="gf-header">
-        <div class="gf-header-top">
-            <div class="gf-logo-wrapper">
-                <img src="@Url.Content("~/img/logoGF.png")"
-                     alt="Logo Grupo Fiesler"
-                     class="gf-logo-img" />
+    <article class="gf-kpi-card">
+        <h2 class="gf-kpi-label">Permisos pendientes</h2>
+        <p class="gf-kpi-value">@Model.TotalPendientes</p>
+        <span class="gf-kpi-helper">En espera de aprobación</span>
+    </article>
+
+    <article class="gf-kpi-card">
+        <h2 class="gf-kpi-label">Aprobados</h2>
+        <p class="gf-kpi-value">@Model.TotalAprobados</p>
+        <span class="gf-kpi-helper">Histórico</span>
+    </article>
+
+    <article class="gf-kpi-card">
+        <h2 class="gf-kpi-label">Rechazados</h2>
+        <p class="gf-kpi-value">@Model.TotalRechazados</p>
+        <span class="gf-kpi-helper">Histórico</span>
+    </article>
+
+    <article class="gf-kpi-card">
+        <h2 class="gf-kpi-label">Próximos 7 días</h2>
+        <p class="gf-kpi-value">@Model.TotalProximos</p>
+        <span class="gf-kpi-helper">Permisos en calendario</span>
+    </article>
+
+</section>
+
+<form asp-action="Main" method="get">
+    <section class="gf-filters-bar">
+
+        <div class="gf-filters-group">
+
+            <div class="gf-form-group">
+                <label class="gf-label">Desde</label>
+                <input type="date"
+                       name="desde"
+                       class="gf-input"
+                       value="@Context.Request.Query["desde"]" />
             </div>
+
+            <div class="gf-form-group">
+                <label class="gf-label">Hasta</label>
+                <input type="date"
+                       name="hasta"
+                       class="gf-input"
+                       value="@Context.Request.Query["hasta"]" />
+            </div>
+
+            <div class="gf-form-group">
+                <label class="gf-label">Estado</label>
+                <select name="estado" class="gf-input">
+                    <option value="">Todos</option>
+                    <option value="0" selected="@(Context.Request.Query["estado"] == "0")">Pendiente</option>
+                    <option value="1" selected="@(Context.Request.Query["estado"] == "1")">Aprobado</option>
+                    <option value="2" selected="@(Context.Request.Query["estado"] == "2")">Rechazado</option>
+                </select>
+            </div>
+
         </div>
 
-        <div class="gf-header-bar">
-            <span class="gf-header-bar-text">
-                Calidad y servicio que marcan la diferencia
-            </span>
+        <div class="gf-filters-actions">
+            <a asp-action="Main" class="gf-btn gf-btn-secondary">Limpiar</a>
+            <button type="submit" class="gf-btn gf-btn-primary">Filtrar</button>
         </div>
-    </header>
 
-    <div class="gf-main-layout">
+    </section>
+</form>
 
-        <!-- SIDEBAR -->
-        <aside class="gf-sidebar">
-            <div class="gf-sidebar-title">Gestión GF</div>
+<section class="gf-table-section">
 
-            <nav class="gf-nav">
-                <ul class="gf-nav-list">
-                    <li><a asp-controller="Home" asp-action="Main" class="gf-nav-link gf-nav-link-active">Dashboard</a></li>
-                    <li><a asp-controller="Solicitud" asp-action="CrearSolicitud" class="gf-nav-link">Permisos</a></li>
-                    <li><a href="#" class="gf-nav-link">Usuarios</a></li>
-                    <li><a href="#" class="gf-nav-link">Reportes</a></li>
-                    <li><a href="#" class="gf-nav-link">Configuración</a></li>
-                </ul>
-            </nav>
-        </aside>
+    <div class="gf-table-header-row">
+        <h2 class="gf-section-title">Solicitudes recientes</h2>
 
-        <!-- CONTENIDO -->
-        <main class="gf-content">
+        <div class="gf-table-actions">
+            <a asp-action="ExportarPdf"
+               asp-route-desde="@Context.Request.Query["desde"]"
+               asp-route-hasta="@Context.Request.Query["hasta"]"
+               asp-route-estado="@Context.Request.Query["estado"]"
+               class="gf-btn gf-btn-outline">
+                Exportar PDF
+            </a>
 
-            <div class="gf-content-header">
-                <div>
-                    <h1 class="gf-page-title">Dashboard administrador</h1>
-                    <p class="gf-page-subtitle">Resumen de solicitudes de permisos del personal.</p>
-                </div>
-
-                <div class="gf-user-info">
-                    <a class="gf-link" asp-controller="Notificacion" asp-action="Index" title="Notificaciones">
-                        🔔
-                        @if (Model.NotificacionesNoLeidas > 0)
-                        {
-                            <span style="margin-left:6px; font-weight:700;">(@Model.NotificacionesNoLeidas)</span>
-                        }
-                    </a>
-                    <h1 class="gf-page-title">Hola, @nombre</h1>
-                    <a class="gf-link gf-link-logout" asp-controller="Home" asp-action="Index">Cerrar sesión</a>
-                </div>
-            </div>
-
-            <!-- KPIs-->
-            <section class="gf-kpi-grid">
-                <article class="gf-kpi-card">
-                    <h2 class="gf-kpi-label">Permisos pendientes</h2>
-                    <p class="gf-kpi-value">-</p>
-                    <span class="gf-kpi-helper">En espera de aprobación</span>
-                </article>
-
-                <article class="gf-kpi-card">
-                    <h2 class="gf-kpi-label">Aprobados hoy</h2>
-                    <p class="gf-kpi-value">-</p>
-                    <span class="gf-kpi-helper">Últimas 24 horas</span>
-                </article>
-
-                <article class="gf-kpi-card">
-                    <h2 class="gf-kpi-label">Rechazados hoy</h2>
-                    <p class="gf-kpi-value">-</p>
-                    <span class="gf-kpi-helper">Últimas 24 horas</span>
-                </article>
-
-                <article class="gf-kpi-card">
-                    <h2 class="gf-kpi-label">Próximos 7 días</h2>
-                    <p class="gf-kpi-value">-</p>
-                    <span class="gf-kpi-helper">Permisos en calendario</span>
-                </article>
-            </section>
-
-            <!-- FILTROS -->
-            <form asp-action="Main" method="get">
-                <section class="gf-filters-bar">
-
-                    <div class="gf-filters-group">
-
-                        <div class="gf-form-group">
-                            <label class="gf-label">Desde</label>
-                            <input type="date" name="desde" class="gf-input"
-                                   value="@Context.Request.Query["desde"]" />
-                        </div>
-
-                        <div class="gf-form-group">
-                            <label class="gf-label">Hasta</label>
-                            <input type="date" name="hasta" class="gf-input"
-                                   value="@Context.Request.Query["hasta"]" />
-                        </div>
-
-                        <div class="gf-form-group">
-                            <label class="gf-label">Estado</label>
-                            <select name="estado" class="gf-input">
-                                <option value="">Todos</option>
-                                <option value="0" selected="@(Context.Request.Query["estado"] == "0")">Pendiente</option>
-                                <option value="1" selected="@(Context.Request.Query["estado"] == "1")">Aprobado</option>
-                                <option value="2" selected="@(Context.Request.Query["estado"] == "2")">Rechazado</option>
-                            </select>
-                        </div>
-
-                    </div>
-
-                    <div class="gf-filters-actions">
-                        <a asp-action="Main" class="gf-btn gf-btn-secondary">Limpiar</a>
-                        <button type="submit" class="gf-btn gf-btn-primary">Filtrar</button>
-                    </div>
-
-                </section>
-            </form>
-
-
-            <!-- TABLA DE SOLICITUDES -->
-            <div class="gf-table-header-row">
-                <h2 class="gf-section-title">Solicitudes recientes</h2>
-
-                <div class="gf-table-actions">
-                    <a asp-action="ExportarPdf"
-                       asp-route-desde="@Context.Request.Query["desde"]"
-                       asp-route-hasta="@Context.Request.Query["hasta"]"
-                       asp-route-estado="@Context.Request.Query["estado"]"
-                       class="gf-btn gf-btn-outline">
-                        Exportar PDF
-                    </a>
-
-                    <a asp-action="ExportarExcel"
-                       asp-route-desde="@Context.Request.Query["desde"]"
-                       asp-route-hasta="@Context.Request.Query["hasta"]"
-                       asp-route-estado="@Context.Request.Query["estado"]"
-                       class="gf-btn gf-btn-primary">
-                        Exportar Excel
-                    </a>
-                </div>
-            </div>
-
-                <div class="gf-table-wrapper">
-                    @if (TempData["Ok"] != null)
-                    {
-                        <div class="gf-alert gf-alert-success">@TempData["Ok"]</div>
-                    }
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
-                    }
-
-                    <table class="gf-table">
-                        <thead>
-                            <tr>
-                                <th>Nº</th>
-                                <th>Colaborador</th>
-                                <th>Tipo</th>
-                                <th>Motivo</th>
-                                <th>Fecha inicio</th>
-                                <th>Fecha fin</th>
-                                <th>Estado</th>
-                                <th>Adjunto</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            @if (Model?.Solicitudes == null || Model.Solicitudes.Count == 0)
-                            {
-                                <tr>
-                                    <td colspan="8">No hay solicitudes registradas.</td>
-                                </tr>
-                            }
-                            else
-                            {
-                                foreach (var s in Model.Solicitudes)
-                                {
-                                    <tr>
-                                        <td>@s.IdSolicitud</td>
-                                        <td>@s.Colaborador</td>
-                                        <td>@s.TipoPermiso</td>
-                                        <td>@s.Motivo</td>
-                                        <td>@s.FechaInicio.ToString("dd-MM-yyyy")</td>
-                                        <td>@s.FechaFinal.ToString("dd-MM-yyyy")</td>
-
-                                        <td>
-                                            @if (s.Estado == 0)
-                                            {
-                                                <span class="gf-badge gf-badge-pending">Pendiente</span>
-                                            }
-                                            else if (s.Estado == 1)
-                                            {
-                                                <span class="gf-badge gf-badge-approved">Aprobado</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="gf-badge gf-badge-rejected">Rechazado</span>
-                                            }
-                                        </td>
-
-                                        <td>
-                                            @if (!string.IsNullOrWhiteSpace(s.ArchivoFile))
-                                            {
-                                                <a class="gf-table-link" href="@s.ArchivoFile" target="_blank">Ver</a>
-                                            }
-                                            else
-                                            {
-                                                <span>-</span>
-                                            }
-                                        </td>
-
-                                        <td>
-                                            @* ACCIONES *@
-                                            @if (s.Estado == 0)
-                                            {
-                                                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                                    <form asp-controller="Solicitud" asp-action="Aprobar" method="post" style="display:inline;">
-                                                        @Html.AntiForgeryToken()
-                                                        <input type="hidden" name="idSolicitud" value="@s.IdSolicitud" />
-                                                        <button type="submit" class="gf-btn gf-btn-primary">Aprobar</button>
-                                                    </form>
-
-                                                    @* Rechazar = ir a pantalla para capturar motivo *@
-                                                    <a class="gf-btn gf-btn-primary"
-                                                       asp-controller="Solicitud"
-                                                       asp-action="Rechazar"
-                                                       asp-route-id="@s.IdSolicitud">
-                                                        Rechazar
-                                                    </a>
-                                                </div>
-                                            }
-                                            else if (s.Estado == 2)
-                                            {
-                                                @* Ver motivo (tooltip) *@
-                                                @* Mouse sobre "Ver motivo" *@
-                                                if (!string.IsNullOrWhiteSpace(s.MotivoRechazo))
-                                                {
-                                                    <span class="gf-table-link" title="@s.MotivoRechazo">Ver motivo</span>
-                                                }
-                                                else
-                                                {
-                                                    <span>-</span>
-                                                }
-                                            }
-                                            else
-                                            {
-                                                <span>-</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                        </tbody>
-
-                    </table>
-                </div>
-            </section>
-
-        </main>
+            <a asp-action="ExportarExcel"
+               asp-route-desde="@Context.Request.Query["desde"]"
+               asp-route-hasta="@Context.Request.Query["hasta"]"
+               asp-route-estado="@Context.Request.Query["estado"]"
+               class="gf-btn gf-btn-primary">
+                Exportar Excel
+            </a>
+        </div>
     </div>
 
-    <footer class="gf-footer">
-        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
-    </footer>
+    <div class="gf-table-wrapper">
+        <table class="gf-table">
+            <thead>
+                <tr>
+                    <th>Nº</th>
+                    <th>Colaborador</th>
+                    <th>Tipo</th>
+                    <th>Motivo</th>
+                    <th>Fecha inicio</th>
+                    <th>Fecha fin</th>
+                    <th>Estado</th>
+                    <th>Adjunto</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
 
-</body>
-</html>
+            <tbody>
+                @if (Model?.Solicitudes == null || Model.Solicitudes.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9">No hay solicitudes registradas.</td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var s in Model.Solicitudes)
+                    {
+                        <tr>
+                            <td>@s.IdSolicitud</td>
+                            <td>@s.Colaborador</td>
+                            <td>@s.TipoPermiso</td>
+                            <td>@s.Motivo</td>
+                            <td>@s.FechaInicio.ToString("dd-MM-yyyy")</td>
+                            <td>@s.FechaFinal.ToString("dd-MM-yyyy")</td>
 
+                            <td>
+                                @if (s.Estado == 0)
+                                {
+                                    <span class="gf-badge gf-badge-pending">Pendiente</span>
+                                }
+                                else if (s.Estado == 1)
+                                {
+                                    <span class="gf-badge gf-badge-approved">Aprobado</span>
+                                }
+                                else
+                                {
+                                    <span class="gf-badge gf-badge-rejected">Rechazado</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(s.ArchivoFile))
+                                {
+                                    <a class="gf-table-link" href="@s.ArchivoFile" target="_blank">Ver</a>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (s.Estado == 0)
+                                {
+                                    <div style="display:flex; gap:8px;">
+                                        <form asp-controller="Solicitud" asp-action="Aprobar" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="idSolicitud" value="@s.IdSolicitud" />
+                                            <button type="submit" class="gf-btn gf-btn-primary">Aprobar</button>
+                                        </form>
+
+                                        <a class="gf-btn gf-btn-primary"
+                                           asp-controller="Solicitud"
+                                           asp-action="Rechazar"
+                                           asp-route-id="@s.IdSolicitud">
+                                            Rechazar
+                                        </a>
+                                    </div>
+                                }
+                                else if (s.Estado == 2 && !string.IsNullOrWhiteSpace(s.MotivoRechazo))
+                                {
+                                    <span class="gf-table-link" title="@s.MotivoRechazo">Ver motivo</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+
+        </table>
+    </div>
+</section>
 
 

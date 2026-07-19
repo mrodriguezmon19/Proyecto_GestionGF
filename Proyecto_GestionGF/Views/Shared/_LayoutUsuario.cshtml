@@ -1,0 +1,115 @@
+﻿@{
+    var nombre = ViewBag.Nombre as string ?? "Usuario";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Gestión GF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="gf-dashboard-body">
+
+    <!-- HEADER -->
+    <header class="gf-header">
+        <div class="gf-header-top">
+            <div class="gf-logo-wrapper">
+                <img src="@Url.Content("~/img/logoGF.png")"
+                     alt="Logo Grupo Fiesler"
+                     class="gf-logo-img" />
+            </div>
+        </div>
+
+        <div class="gf-header-bar">
+            <span class="gf-header-bar-text">
+                Calidad y servicio que marcan la diferencia
+            </span>
+        </div>
+    </header>
+
+    <div class="gf-main-layout">
+
+        <!-- SIDEBAR USUARIO -->
+        <aside class="gf-sidebar">
+            <div class="gf-sidebar-title">Gestión GF</div>
+            <nav class="gf-nav">
+                <ul class="gf-nav-list">
+                    <li>
+                        <a asp-controller="Home"
+                           asp-action="MainUsuario"
+                           class="gf-nav-link @(ViewBag.Menu == "Panel" ? "gf-nav-link-active" : "")">
+                            Mi panel
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Solicitud"
+                           asp-action="CrearSolicitud"
+                           class="gf-nav-link @(ViewBag.Menu == "NuevaSolicitud" ? "gf-nav-link-active" : "")">
+                            Nueva solicitud
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Solicitud"
+                           asp-action="MisSolicitudes"
+                           class="gf-nav-link @(ViewBag.Menu == "MisSolicitudes" ? "gf-nav-link-active" : "")">
+                            Mis solicitudes
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home"
+                           asp-action="CerrarSesion"
+                           class="gf-nav-link">
+                            Cerrar sesión
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <main class="gf-content">
+
+            <div class="gf-content-header">
+                <div>
+                    <h1 class="gf-page-title">@ViewData["Title"]</h1>
+                    <p class="gf-page-subtitle">@ViewBag.Subtitulo</p>
+                </div>
+
+                <div class="gf-user-info">
+                    <a class="gf-link" asp-controller="Notificacion" asp-action="Index" title="Notificaciones">
+                        🔔
+                        @if ((int?)(ViewBag.NotificacionesNoLeidas) > 0)
+                        {
+                            <span style="margin-left:6px; font-weight:700;">
+                                (@ViewBag.NotificacionesNoLeidas)
+                            </span>
+                        }
+                    </a>
+                    <span class="gf-user-name">@nombre</span>
+                    <a class="gf-link gf-link-logout" asp-controller="Home" asp-action="CerrarSesion">Cerrar sesión</a>
+                </div>
+            </div>
+
+            @if (TempData["Ok"] != null)
+            {
+                <div class="gf-alert gf-alert-success">@TempData["Ok"]</div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
+            }
+
+            @RenderBody()
+
+        </main>
+    </div>
+
+    <footer class="gf-footer">
+        <span>© @DateTime.Now.Year Grupo Fiesler | Gestión GF</span>
+    </footer>
+
+</body>
+</html>

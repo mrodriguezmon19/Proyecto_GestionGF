@@ -1,0 +1,101 @@
+﻿@{
+    var nombre = ViewBag.Nombre as string ?? "Administrador";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Proyecto_GestionGF</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Proyecto_GestionGF.styles.css" asp-append-version="true" />
+</head>
+<body class="gf-dashboard-body">
+
+    <!-- HEADER -->
+    <header class="gf-header">
+        <div class="gf-header-top">
+            <div class="gf-logo-wrapper">
+                <img src="@Url.Content("~/img/logoGF.png")" class="gf-logo-img" />
+            </div>
+        </div>
+
+        <div class="gf-header-bar">
+            <span class="gf-header-bar-text">
+                Calidad y servicio que marcan la diferencia
+            </span>
+        </div>
+    </header>
+
+    <div class="gf-main-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="gf-sidebar">
+            <div class="gf-sidebar-title">Gestión GF</div>
+
+            <nav class="gf-nav">
+                <ul class="gf-nav-list">
+                    <li><a asp-controller="Home" asp-action="Main" class="gf-nav-link">Dashboard</a></li>
+                    <li><a asp-controller="Solicitud" asp-action="HistorialAdmin" class="gf-nav-link">Historial</a></li>
+                    <li><a asp-controller="TipoPermiso" asp-action="Index" class="gf-nav-link">Tipos de permiso</a></li>
+                    <li><a asp-controller="Usuario" asp-action="Index" class="gf-nav-link">Usuarios</a></li>
+                    <li><a asp-controller="Auditoria" asp-action="Index" class="gf-nav-link">Auditoría</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <main class="gf-content">
+
+            <!-- HEADER INTERNO -->
+            <div class="gf-content-header">
+                <div>
+                    <h1 class="gf-page-title">@ViewData["Title"]</h1>
+                    <p class="gf-page-subtitle">@ViewBag.Subtitulo</p>
+                </div>
+
+                <div class="gf-user-info">
+                    <a class="gf-link" asp-controller="Notificacion" asp-action="Index">
+                        🔔
+                        @if ((int?)(ViewBag.NotificacionesNoLeidas) > 0)
+                        {
+                            <span>(@ViewBag.NotificacionesNoLeidas)</span>
+                        }
+                    </a>
+
+                    <span class="gf-user-name">@nombre</span>
+
+                    <a class="gf-link gf-link-logout"
+                       asp-controller="Home"
+                       asp-action="CerrarSesion">
+                        Cerrar sesión
+                    </a>
+                </div>
+            </div>
+
+            <!-- MENSAJES -->
+            @if (TempData["Ok"] != null)
+            {
+                <div class="gf-alert gf-alert-success">@TempData["Ok"]</div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="gf-alert gf-alert-error">@TempData["Error"]</div>
+            }
+
+            <!-- AQUÍ VA CADA VISTA -->
+            @RenderBody()
+
+        </main>
+    </div>
+
+    <footer class="gf-footer">
+        <span>© @DateTime.Now.Year Grupo Fiesler</span>
+    </footer>
+
+</body>
+</html>

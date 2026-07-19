@@ -230,6 +230,22 @@ body {
     color: var(--gf-danger);
 }
 
+.text-danger {
+    color: #c0392b;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    display: block;
+}
+
+.gf-alert-success {
+    background-color: #eafaf1;
+    color: #1e8449;
+    border: 1px solid #a9dfbf;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
 /* ------------------ FOOTER ------------------ */
 .gf-footer {
     padding: .75rem 1rem;

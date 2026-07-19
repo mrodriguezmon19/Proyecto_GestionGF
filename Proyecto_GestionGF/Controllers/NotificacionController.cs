@@ -9,17 +9,29 @@ namespace Proyecto_GestionGF.Controllers
     public class NotificacionController : Controller
     {
         private readonly IConfiguration _configuration;
+
         public NotificacionController(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
-        //Accion que muestra el menú de las notificaciones
+        private void CargarDatosHeader(SqlConnection cn, int idUsuario)
+        {
+            ViewBag.Nombre = HttpContext.Session.GetString("Nombre") ?? "Usuario";
+
+            ViewBag.NotificacionesNoLeidas = cn.QueryFirstOrDefault<int>(
+                "Notificacion_ContarNoLeidas",
+                new { IdUsuario = idUsuario },
+                commandType: CommandType.StoredProcedure
+            );
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
             var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
-            if (idUsuario <= 0) return RedirectToAction("Index", "Home");
+            if (idUsuario <= 0)
+                return RedirectToAction("Index", "Home");
 
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
 
@@ -29,13 +41,11 @@ namespace Proyecto_GestionGF.Controllers
                 commandType: CommandType.StoredProcedure
             ).ToList();
 
-            ViewBag.NoLeidas = cn.QueryFirstOrDefault<int>(
-                "Notificacion_ContarNoLeidas",
-                new { IdUsuario = idUsuario },
-                commandType: CommandType.StoredProcedure
-            );
+            CargarDatosHeader(cn, idUsuario);
 
-            return View(lista); // Views/Notificacion/Index.cshtml
+            ViewBag.NoLeidas = ViewBag.NotificacionesNoLeidas;
+
+            return View(lista);
         }
 
         [HttpPost]
@@ -43,10 +53,11 @@ namespace Proyecto_GestionGF.Controllers
         public IActionResult MarcarLeida(int idNotificacion)
         {
             var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
-            if (idUsuario <= 0) return RedirectToAction("Index", "Home");
-        //Accion para marcar como leida la notificación
+            if (idUsuario <= 0)
+                return RedirectToAction("Index", "Home");
 
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+
             cn.QueryFirstOrDefault<int>(
                 "Notificacion_MarcarLeida",
                 new { IdNotificacion = idNotificacion, IdUsuario = idUsuario },
@@ -56,16 +67,16 @@ namespace Proyecto_GestionGF.Controllers
             return RedirectToAction("Index");
         }
 
-
-        //Accion para marcar como leidas las notificaciones
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult MarcarTodasLeidas()
         {
             var idUsuario = HttpContext.Session.GetInt32("IdUsuario") ?? 0;
-            if (idUsuario <= 0) return RedirectToAction("Index", "Home");
+            if (idUsuario <= 0)
+                return RedirectToAction("Index", "Home");
 
             using var cn = new SqlConnection(_configuration["ConnectionStrings:BDConnection"]);
+
             cn.QueryFirstOrDefault<int>(
                 "Notificacion_MarcarTodasLeidas",
                 new { IdUsuario = idUsuario },
