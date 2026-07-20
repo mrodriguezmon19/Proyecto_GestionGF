@@ -5,6 +5,7 @@
         public int IdSolicitud { get; set; }
         public string NombreUsuario { get; set; } = string.Empty;
         public string NombrePermiso { get; set; } = string.Empty;
+
         public DateTime FechaInicio { get; set; }
         public DateTime FechaFinal { get; set; }
 
